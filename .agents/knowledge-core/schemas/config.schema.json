@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-knowledge-core.local/schemas/config.schema.json",
+  "title": "Agentic Knowledge Core Config",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "core",
+    "entrypoints",
+    "paths",
+    "documents",
+    "skills",
+    "ignore",
+    "generated",
+    "validation",
+    "policy",
+    "project"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "core": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "entrypoints": {
+      "type": "object",
+      "required": [
+        "agentInstructions",
+        "knowledgeIndex",
+        "humanKnowledgeHome"
+      ],
+      "properties": {
+        "agentInstructions": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "knowledgeIndex": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "humanKnowledgeHome": {
+          "$ref": "#/$defs/relativePath"
+        }
+      },
+      "additionalProperties": false
+    },
+    "paths": {
+      "type": "object",
+      "required": [
+        "docsRoot",
+        "generatedRoot",
+        "handoffsRoot",
+        "skillsRoot",
+        "evalsRoot",
+        "coreRoot"
+      ],
+      "properties": {
+        "docsRoot": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "generatedRoot": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "handoffsRoot": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "skillsRoot": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "evalsRoot": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "coreRoot": {
+          "$ref": "#/$defs/relativePath"
+        }
+      },
+      "additionalProperties": false
+    },
+    "documents": {
+      "type": "object",
+      "required": [
+        "frontmatterSchema",
+        "authoredExtensions",
+        "defaultDirectories"
+      ],
+      "properties": {
+        "frontmatterSchema": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "authoredExtensions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\.[a-z0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "defaultDirectories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "skills": {
+      "type": "object",
+      "required": [
+        "frontmatterSchema",
+        "requireEvalForConcreteSkills",
+        "allowAllowedToolsByDefault"
+      ],
+      "properties": {
+        "frontmatterSchema": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "requireEvalForConcreteSkills": {
+          "type": "boolean"
+        },
+        "allowAllowedToolsByDefault": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ignore": {
+      "type": "object",
+      "required": [
+        "paths",
+        "authoredDocs"
+      ],
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/globPattern"
+          },
+          "uniqueItems": true
+        },
+        "authoredDocs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/globPattern"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "generated": {
+      "type": "object",
+      "required": [
+        "llmsTxt",
+        "knowledgeMap",
+        "knowledgeGraph"
+      ],
+      "properties": {
+        "llmsTxt": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "knowledgeMap": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "knowledgeGraph": {
+          "$ref": "#/$defs/relativePath"
+        }
+      },
+      "additionalProperties": false
+    },
+    "validation": {
+      "type": "object",
+      "required": [
+        "requireFrontmatter",
+        "requireUniqueIds",
+        "requireUniqueCanonicalTopics",
+        "validateCodeRefs",
+        "validateGeneratedFreshness",
+        "warnOnStaleDocuments"
+      ],
+      "properties": {
+        "requireFrontmatter": {
+          "type": "boolean"
+        },
+        "requireUniqueIds": {
+          "type": "boolean"
+        },
+        "requireUniqueCanonicalTopics": {
+          "type": "boolean"
+        },
+        "validateCodeRefs": {
+          "type": "boolean"
+        },
+        "validateGeneratedFreshness": {
+          "type": "boolean"
+        },
+        "warnOnStaleDocuments": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": [
+        "generatedIsCanonical",
+        "allowProjectFactsInCore",
+        "allowProjectFactsInSkills",
+        "staleAfterDays",
+        "generatedFilesReadOnly",
+        "handoffsAreCanonical"
+      ],
+      "properties": {
+        "generatedIsCanonical": {
+          "type": "boolean"
+        },
+        "allowProjectFactsInCore": {
+          "type": "boolean"
+        },
+        "allowProjectFactsInSkills": {
+          "type": "boolean"
+        },
+        "staleAfterDays": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "generatedFilesReadOnly": {
+          "type": "boolean"
+        },
+        "handoffsAreCanonical": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(^|/)\\.\\.($|/)).+"
+    },
+    "globPattern": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(^|/)\\.\\.($|/)).+"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "0.1.0",
+  "core": {
+    "name": "agentic-workspace-core",
+    "version": "0.1.0"
+  },
+  "generated": true,
+  "source": "docs",
+  "nodes": [
+    {
+      "id": "project.index",
+      "type": "overview",
+      "status": "current",
+      "owner": "project",
+      "summary": "Human-readable home and routing map for repository knowledge.",
+      "path": "docs/index.md",
+      "canonical_for": [
+        "project.index"
+      ],
+      "last_reviewed": "2026-05-23",
+      "related": [
+        "project.knowledge-system"
+      ],
+      "verified_by": [
+        "npm run knowledge:check"
+      ]
+    },
+    {
+      "id": "project.knowledge-system",
+      "type": "policy",
+      "status": "current",
+      "owner": "project",
+      "summary": "Repository-local policy for using Agentic Workspace Core's portable knowledge system.",
+      "path": "docs/knowledge-system.md",
+      "canonical_for": [
+        "project.knowledge-system"
+      ],
+      "last_reviewed": "2026-05-23",
+      "depends_on": [
+        "project.index"
+      ],
+      "code_refs": [
+        "AGENTS.md",
+        ".agents/knowledge.config.json",
+        ".agents/knowledge-core/README.md",
+        ".agents/knowledge-core/memory-taxonomy.md",
+        ".agents/knowledge-core/agent-memory-policy.md",
+        ".agents/knowledge-core/scripts/lib/core.mjs",
+        ".agents/knowledge-core/scripts/build-index.mjs",
+        ".agents/knowledge-core/scripts/doctor.mjs"
+      ],
+      "verified_by": [
+        "npm run knowledge:check"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "project.index",
+      "to": "project.knowledge-system",
+      "type": "related"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": ".agents/knowledge-core/agent-memory-policy.md",
+      "type": "code_ref"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": ".agents/knowledge-core/memory-taxonomy.md",
+      "type": "code_ref"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": ".agents/knowledge-core/README.md",
+      "type": "code_ref"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": ".agents/knowledge-core/scripts/build-index.mjs",
+      "type": "code_ref"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": ".agents/knowledge-core/scripts/doctor.mjs",
+      "type": "code_ref"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": ".agents/knowledge-core/scripts/lib/core.mjs",
+      "type": "code_ref"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": ".agents/knowledge.config.json",
+      "type": "code_ref"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": "AGENTS.md",
+      "type": "code_ref"
+    },
+    {
+      "from": "project.knowledge-system",
+      "to": "project.index",
+      "type": "depends_on"
+    }
+  ]
+}

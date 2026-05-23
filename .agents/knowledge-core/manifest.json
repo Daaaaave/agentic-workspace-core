@@ -1,0 +1,47 @@
+{
+  "name": "agentic-workspace-core",
+  "version": "0.1.0",
+  "schemaVersion": "0.1.0",
+  "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
+  "entrypoints": {
+    "agentInstructions": "AGENTS.md",
+    "knowledgeIndex": "llms.txt",
+    "humanKnowledgeHome": "docs/index.md",
+    "agentLayerReadme": ".agents/README.md"
+  },
+  "canonicalPaths": {
+    "config": ".agents/knowledge.config.json",
+    "core": ".agents/knowledge-core",
+    "schema": ".agents/knowledge-core/schema.md",
+    "lifecycle": ".agents/knowledge-core/lifecycle.md",
+    "routing": ".agents/knowledge-core/routing.md",
+    "memoryTaxonomy": ".agents/knowledge-core/memory-taxonomy.md",
+    "agentMemoryPolicy": ".agents/knowledge-core/agent-memory-policy.md",
+    "skillsSpec": ".agents/knowledge-core/skills.md",
+    "skills": ".agents/skills",
+    "evals": ".agents/evals",
+    "docs": "docs",
+    "generatedDocs": "docs/generated",
+    "handoffs": ".context/handoffs"
+  },
+  "generatedOutputs": {
+    "llmsTxt": "llms.txt",
+    "knowledgeMap": "docs/generated/knowledge-map.md",
+    "knowledgeGraph": "docs/generated/knowledge-graph.json"
+  },
+  "requiredTemplates": [
+    "canonical-doc.md",
+    "decision.md",
+    "runbook.md",
+    "research.md",
+    "plan.md",
+    "handoff.md",
+    "skill.md",
+    "skill-eval.md"
+  ],
+  "requiredScripts": [
+    "lib/core.mjs",
+    "build-index.mjs",
+    "doctor.mjs"
+  ]
+}

@@ -1,0 +1,359 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-knowledge-core.local/schemas/document.schema.json",
+  "title": "Knowledge Document Frontmatter",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "status",
+    "owner",
+    "summary",
+    "canonical_for",
+    "last_reviewed"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "type": {
+      "$ref": "#/$defs/documentType"
+    },
+    "status": {
+      "$ref": "#/$defs/status"
+    },
+    "owner": {
+      "$ref": "#/$defs/identifier"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280
+    },
+    "canonical_for": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identifier"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identifier"
+      },
+      "uniqueItems": true
+    },
+    "related": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identifier"
+      },
+      "uniqueItems": true
+    },
+    "code_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/repositoryPath"
+      },
+      "uniqueItems": true
+    },
+    "verified_by": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/command"
+      },
+      "uniqueItems": true
+    },
+    "supersedes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identifier"
+      },
+      "uniqueItems": true
+    },
+    "superseded_by": {
+      "$ref": "#/$defs/identifier"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourceRef"
+      },
+      "uniqueItems": true
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tag"
+      },
+      "uniqueItems": true
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "last_reviewed": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "superseded"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "superseded_by"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "superseded_by"
+        ]
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "const": "superseded"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "decision"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": [
+              "proposed",
+              "accepted",
+              "deprecated",
+              "superseded",
+              "archived"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "plan"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": [
+              "draft",
+              "active",
+              "completed",
+              "superseded",
+              "archived"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "research"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": [
+              "draft",
+              "completed",
+              "superseded",
+              "archived"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "policy"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": [
+              "draft",
+              "proposed",
+              "current",
+              "accepted",
+              "deprecated",
+              "superseded",
+              "archived"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "runbook"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": [
+              "draft",
+              "current",
+              "deprecated",
+              "superseded",
+              "archived"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "enum": [
+              "overview",
+              "domain",
+              "architecture",
+              "component",
+              "database",
+              "integration",
+              "api",
+              "workflow",
+              "reference",
+              "glossary"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "enum": [
+              "draft",
+              "current",
+              "deprecated",
+              "superseded",
+              "archived"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+    },
+    "documentType": {
+      "type": "string",
+      "enum": [
+        "overview",
+        "domain",
+        "architecture",
+        "component",
+        "database",
+        "integration",
+        "api",
+        "workflow",
+        "runbook",
+        "decision",
+        "research",
+        "plan",
+        "reference",
+        "policy",
+        "glossary"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "proposed",
+        "active",
+        "current",
+        "accepted",
+        "completed",
+        "deprecated",
+        "superseded",
+        "archived"
+      ]
+    },
+    "repositoryPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "pattern": "^(?!/)(?!.*(^|/)\\.\\.($|/)).+"
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sourceRef": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "tag": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$"
+    }
+  },
+  "additionalProperties": false
+}

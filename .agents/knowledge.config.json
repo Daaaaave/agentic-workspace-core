@@ -1,0 +1,75 @@
+{
+  "$schema": "./knowledge-core/schemas/config.schema.json",
+  "schemaVersion": "0.1.0",
+  "core": {
+    "name": "agentic-workspace-core",
+    "version": "0.1.0"
+  },
+  "entrypoints": {
+    "agentInstructions": "AGENTS.md",
+    "knowledgeIndex": "llms.txt",
+    "humanKnowledgeHome": "docs/index.md"
+  },
+  "paths": {
+    "docsRoot": "docs",
+    "generatedRoot": "docs/generated",
+    "handoffsRoot": ".context/handoffs",
+    "skillsRoot": ".agents/skills",
+    "evalsRoot": ".agents/evals",
+    "coreRoot": ".agents/knowledge-core"
+  },
+  "documents": {
+    "frontmatterSchema": ".agents/knowledge-core/schemas/document.schema.json",
+    "authoredExtensions": [
+      ".md"
+    ],
+    "defaultDirectories": [
+      "docs/architecture",
+      "docs/components",
+      "docs/domain",
+      "docs/workflows",
+      "docs/runbooks",
+      "docs/decisions",
+      "docs/research",
+      "docs/plans",
+      "docs/reference",
+      "docs/glossary"
+    ]
+  },
+  "skills": {
+    "frontmatterSchema": ".agents/knowledge-core/schemas/skill.schema.json",
+    "requireEvalForConcreteSkills": true,
+    "allowAllowedToolsByDefault": false
+  },
+  "ignore": {
+    "paths": [
+      ".git/**",
+      ".context/**"
+    ],
+    "authoredDocs": [
+      "docs/generated/**"
+    ]
+  },
+  "generated": {
+    "llmsTxt": "llms.txt",
+    "knowledgeMap": "docs/generated/knowledge-map.md",
+    "knowledgeGraph": "docs/generated/knowledge-graph.json"
+  },
+  "validation": {
+    "requireFrontmatter": true,
+    "requireUniqueIds": true,
+    "requireUniqueCanonicalTopics": true,
+    "validateCodeRefs": true,
+    "validateGeneratedFreshness": true,
+    "warnOnStaleDocuments": true
+  },
+  "policy": {
+    "generatedIsCanonical": false,
+    "allowProjectFactsInCore": false,
+    "allowProjectFactsInSkills": false,
+    "staleAfterDays": 180,
+    "generatedFilesReadOnly": true,
+    "handoffsAreCanonical": false
+  },
+  "project": {}
+}
