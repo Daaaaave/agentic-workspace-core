@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Updated security policy and release notes to reflect the public npm/GitHub release state.
+
+## 0.1.0 - 2026-05-24
+
 - Added a concise core portability contract covering install, update, local override, generated-file, and breaking-change rules.
 - Added an `agentic-workspace-core init` CLI for private replace-first installation of managed core paths.
 - Added an `agentic-workspace-core update` CLI for private updates of managed core paths while preserving project-specific skill directories/evals and safe local knowledge config extensions.
@@ -15,8 +19,6 @@
 - Added public npm package metadata, release checks, and packed-package script coverage.
 - Added GitHub Actions CI for knowledge validation, CLI smoke tests, package dry-run inspection, and packed install verification.
 - Added GitHub Actions npm publish workflow using provenance-capable publishing.
-
-## 0.1.0
 
 - Initial private extraction of Agentic Workspace Core.
 - Added portable knowledge core, schemas, templates, scripts, starter skills, and lightweight skill evals.

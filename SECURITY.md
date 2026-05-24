@@ -4,11 +4,13 @@ Agentic Workspace Core treats persistent memory as privileged input. A malicious
 
 ## Supported Versions
 
-The project is pre-public and currently supports only the latest `main` branch.
+The supported release line is `0.1.x`, plus the latest `main` branch in the public GitHub repository.
+Security fixes ship as npm patch releases when they affect the published package.
 
 ## Reporting
 
-While the repository is private, report issues directly to the repository owner. Do not publish exploit details until the affected behavior has been reviewed and patched.
+For non-sensitive reports, open a GitHub issue at <https://github.com/Daaaaave/agentic-workspace-core/issues>.
+For sensitive reports, contact the repository owner privately first and do not publish exploit details until the affected behavior has been reviewed and patched.
 
 ## Security Scope
 
