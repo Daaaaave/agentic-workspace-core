@@ -153,9 +153,11 @@ Project-local skill kept across core updates.
 
   writeText(path.join(root, ".agents/README.md"), "# Stale managed README\n");
   fs.mkdirSync(path.join(root, "docs/generated"), { recursive: true });
+  writeText(path.join(root, "docs/generated/old-index.md"), "# Old generated index\n");
 }
 
 function addLocalKnowledgeAndStaleIndexes(root) {
+  addObsoleteManagedDocs(root);
   writeText(path.join(root, "docs/custom/local-release.md"), `---
 id: runbook.local-release
 type: runbook
@@ -174,6 +176,40 @@ Smoke-only local knowledge document.
   writeText(path.join(root, "llms.txt"), "stale llms index\n");
   writeText(path.join(root, ".agents/generated/knowledge-map.md"), "stale knowledge map\n");
   writeText(path.join(root, ".agents/generated/knowledge-graph.json"), "{\"stale\":true}\n");
+}
+
+function addObsoleteManagedDocs(root) {
+  writeText(path.join(root, "docs/index.md"), `---
+id: project.index
+type: overview
+status: current
+owner: project
+summary: Obsolete package docs home.
+canonical_for:
+  - project.index
+last_reviewed: 2026-05-24
+---
+
+# Project Knowledge
+
+Obsolete smoke-only docs home.
+`);
+
+  writeText(path.join(root, "docs/knowledge-system.md"), `---
+id: project.knowledge-system
+type: policy
+status: current
+owner: project
+summary: Obsolete package knowledge-system policy.
+canonical_for:
+  - project.knowledge-system
+last_reviewed: 2026-05-24
+---
+
+# Knowledge System
+
+Obsolete smoke-only knowledge-system policy.
+`);
 }
 
 function addLegacyInputs(root) {
@@ -344,7 +380,10 @@ function verifyLocalOverrides(root) {
     [fs.existsSync(path.join(root, ".agents/skills/local-reviewer/SKILL.md")), "custom skill was not preserved"],
     [fs.existsSync(path.join(root, ".agents/evals/skills/local-reviewer.eval.md")), "custom skill eval was not preserved"],
     [!fs.existsSync(path.join(root, ".agents/README.md")), "obsolete .agents/README.md was not removed"],
-    [!fs.existsSync(path.join(root, "docs/generated")), "obsolete docs/generated was not removed"]
+    [!fs.existsSync(path.join(root, "docs/generated")), "obsolete docs/generated was not removed"],
+    [fs.existsSync(path.join(root, "legacy/.agents/README.md")), "obsolete .agents/README.md was not archived"],
+    [fs.existsSync(path.join(root, "legacy/docs/generated/old-index.md")), "obsolete docs/generated was not archived"],
+    [!fs.existsSync(path.join(root, "legacy/AGENTS.legacy-2.md")), "update archived AGENTS.md through a case-insensitive legacy alias"]
   ];
 
   const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);
@@ -359,9 +398,17 @@ function verifyLocalKnowledgeIndexed(root) {
 
   const checks = [
     [llms.includes("runbook.local-release"), "--skip-check update did not rebuild llms.txt"],
+    [!llms.includes("project.index"), "obsolete docs/index.md stayed in llms.txt"],
+    [!llms.includes("project.knowledge-system"), "obsolete docs/knowledge-system.md stayed in llms.txt"],
     [map.includes("runbook.local-release"), "--skip-check update did not rebuild knowledge map"],
+    [!map.includes("project.index"), "obsolete docs/index.md stayed in knowledge map"],
+    [!map.includes("project.knowledge-system"), "obsolete docs/knowledge-system.md stayed in knowledge map"],
     [Boolean(graphNode), "--skip-check update did not rebuild knowledge graph"],
-    [graphNode?.path === "docs/custom/local-release.md", "knowledge graph node path is wrong"]
+    [graphNode?.path === "docs/custom/local-release.md", "knowledge graph node path is wrong"],
+    [!fs.existsSync(path.join(root, "docs/index.md")), "obsolete docs/index.md was not removed from active docs"],
+    [!fs.existsSync(path.join(root, "docs/knowledge-system.md")), "obsolete docs/knowledge-system.md was not removed from active docs"],
+    [fs.existsSync(path.join(root, "legacy/docs/index.md")), "obsolete docs/index.md was not archived"],
+    [fs.existsSync(path.join(root, "legacy/docs/knowledge-system.md")), "obsolete docs/knowledge-system.md was not archived"]
   ];
 
   const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);
