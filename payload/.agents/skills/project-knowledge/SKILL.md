@@ -35,7 +35,7 @@ The policy authority for memory behavior is `.agents/knowledge-core/memory-polic
 
 | Mode | Trigger | Output |
 | --- | --- | --- |
-| Recall | Existing project knowledge may change the next action. | Minimal docs and code refs read before acting. |
+| Read/Recall | Existing project knowledge may change the next action. | Minimal canonical docs and code refs read before acting. |
 | Classify | Need to decide what kind of memory this is. | Kind, scope, owner, evidence, and destination. |
 | Route | Need a destination for new or changed knowledge. | Target doc, skill, handoff, legacy archive, or outside-repo destination. |
 | Write | Need to add or update durable knowledge. | Canonical doc patch plus regenerated indexes. |
@@ -46,38 +46,60 @@ The policy authority for memory behavior is `.agents/knowledge-core/memory-polic
 | Gap | Expected durable knowledge cannot be found or verified. | Missing owner/source, evidence checked, known/inferred/unknown/blocked state, and safe next action. |
 | Validate | Need confidence that the knowledge core is consistent. | `npm run knowledge:check` result and fixes if needed. |
 
-## Recall Protocol
+## Read / Recall Protocol
 
-Run recall before acting when project context could change the answer.
+Find the smallest reliable context set before acting. `.agents/knowledge-core/memory-policy.md` owns the policy; this section is the default operating procedure.
 
 1. State the recall target in one sentence.
 2. Read `AGENTS.md` if it has not already been provided in the session.
 3. Read `llms.txt` for compact navigation.
-4. Search authored docs with `rg` using:
-   - exact topic terms
-   - likely synonyms
-   - relevant code paths, API names, commands, or error text
-   - workflow words such as deploy, migrate, test, auth, release, review, handoff, rollback, decision, or runbook
-   - `id` or `canonical_for` values when known
-5. Open the smallest likely canonical owner under `docs/`.
-6. Follow only relevant `code_refs`, `verified_by`, `source_refs`, `depends_on`, `related`, `supersedes`, and `superseded_by`.
-7. Apply `.agents/knowledge-core/memory-policy.md` trust rules before acting.
-8. For high-impact work, verify currentness through code, tests, commands, accepted decisions, user direction, or current external sources.
-9. If no owner exists or the owner is insufficient, use the Knowledge Gap Handling rules below.
+4. Build two to four focused search probes from Retrieval Heuristics below.
+5. Search authored docs with `rg`; include exact terms, synonyms, code paths, commands, error text, and likely `id` or `canonical_for` values.
+6. Rank candidates by ownership and evidence signals, not by directory names alone.
+7. Open the smallest likely canonical owner under `docs/`.
+8. Follow only relevant `code_refs`, `verified_by`, `source_refs`, `depends_on`, `related`, `supersedes`, and `superseded_by`.
+9. Apply `.agents/knowledge-core/memory-policy.md` trust rules before acting.
+10. For high-impact work, verify currentness through code, tests, commands, accepted decisions, user direction, or current external sources.
+11. If no owner exists or the owner is insufficient, use Knowledge Gap Handling.
 
 Stop when additional reading is unlikely to change the next action. Do not bulk-read the knowledge base.
 
 Do not scan `.context/` or `legacy/` as project knowledge unless the task explicitly involves transfer, resume, legacy recovery, or legacy audit.
 
+## Retrieval Heuristics
+
+Use generated navigation and metadata first, directory names second. Do not keep a complete directory catalog in this skill; `.agents/knowledge-core/memory-policy.md` Routing and `.agents/knowledge.config.json` own paths.
+
+Search probes should combine:
+
+- task nouns and verbs from the user request
+- likely synonyms and neighboring terms
+- code paths, commands, package names, API names, error text, config keys, and environment names
+- document intent words when useful: architecture, component, domain, workflow, runbook, decision, research, plan, reference, glossary
+- known `id`, `canonical_for`, title, summary, tag, or owner terms from `llms.txt`
+
+Prefer candidates in this order:
+
+| Signal | Prefer |
+| --- | --- |
+| Ownership | Exact `id` or `canonical_for` match over title/tag/path match. |
+| Status | `current` or `accepted` over `draft`, `deprecated`, `superseded`, or `archived`. |
+| Evidence | Direct `code_refs`, `verified_by`, or `source_refs` match over prose-only similarity. |
+| Specificity | Component, runbook, decision, domain, or API owner over broad overview or reference table when both match. |
+| Authority | Authored docs over generated indexes, adapter output, vector hits, graph neighborhoods, logs, issues, comments, or transcripts. |
+
+Use path hints only to reduce search noise. If the generated index is missing or weak, inspect `.agents/knowledge.config.json` for configured doc roots and `.agents/knowledge-core/memory-policy.md` Routing for ownership rules.
+
 ## Knowledge Gap Handling
 
-Use this when expected durable knowledge is missing, stale, ambiguous, or too weak to support the task.
+Use this when expected durable knowledge is missing, stale, ambiguous, or too weak to support the task. `.agents/knowledge-core/memory-policy.md` owns the policy; this section is the default operating procedure.
 
-1. Name the missing owner and evidence checked.
-2. Separate `known`, `inferred`, `unknown`, and `blocked`.
-3. Treat repository traces as leads, not canonical truth.
-4. Proceed only when the remaining risk is low and reversible; otherwise ask or report the blocker.
-5. Create or update a canonical owner only when the write gate passes.
+Produce a compact gap note:
+
+- Missing owner or source.
+- Evidence checked.
+- `known`, `inferred`, `unknown`, and `blocked`.
+- Safe next action: proceed with labeled assumptions, ask/report the blocker, or create/update an owner through the write gate.
 
 ## Write Protocol
 
@@ -86,12 +108,7 @@ Write durable memory only after `.agents/knowledge-core/memory-policy.md` write 
 1. Search for an existing owner by `id`, `canonical_for`, title, keywords, synonyms, and related code paths.
 2. If an owner exists, update that document in place with the smallest clear patch.
 3. If no owner exists, create a new authored doc under the configured `docs/` path only when the topic is durable, shared, evidence-backed, and findable.
-4. Use templates from `.agents/knowledge-core/templates/` only as optional scaffolds:
-   - keep only useful sections
-   - remove placeholders and fake examples
-   - do not copy templates verbatim
-   - do not invent content to satisfy headings
-   - write a smaller schema-valid doc when no template fits
+4. Use templates from `.agents/knowledge-core/templates/` only as optional scaffolds. Keep useful sections, remove placeholders and fake examples, and write a smaller schema-valid doc when no template fits.
 5. Follow `.agents/knowledge-core/document-schema.md` frontmatter. Do not invent arbitrary keys.
 6. Preserve provenance:
    - `code_refs` for implementation anchors
@@ -116,15 +133,14 @@ npm run knowledge:check
 
 ## Correction And Consolidation
 
-Use correction when memory is wrong, stale, duplicated, contradicted, unsafe, private, injected, generated-only, or misleading.
+Use correction when memory is wrong, stale, duplicated, contradicted, unsafe, private, injected, generated-only, or misleading. `.agents/knowledge-core/memory-policy.md` owns the policy; this section is the default operating procedure.
 
-1. Identify the old claim and its owner.
-2. Identify replacement evidence or the reason the claim must be removed.
-3. Update the canonical owner instead of adding a parallel doc.
-4. Preserve useful rationale or history only when it helps future agents understand the current state.
-5. Use `deprecated`, `superseded`, or `archived` when history should remain.
-6. Redact, quarantine, or delete unsafe/private/generated-only material when lifecycle status is not enough.
-7. Rebuild and validate.
+1. Locate the owner and the stale, duplicated, unsafe, or contradicted claim.
+2. Collect replacement evidence or the reason the claim must be removed.
+3. Patch the existing owner; do not add a parallel doc for the same topic.
+4. Preserve only rationale or history that explains the current state.
+5. Apply lifecycle status when history should remain; redact, quarantine, or delete unsafe/private/generated-only material when lifecycle is not enough.
+6. Rebuild and validate.
 
 If code and docs disagree, do not automatically trust either one. Code shows current behavior; docs may show intended behavior. The corrected owner should state what is known, what is intended, and what remains unresolved.
 

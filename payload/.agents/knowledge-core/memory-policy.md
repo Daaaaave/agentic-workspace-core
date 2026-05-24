@@ -2,6 +2,8 @@
 
 This is the single policy file for Agentic Workspace Core memory. Use it to decide what agents may read, write, trust, correct, consolidate, delete, or route into the repository knowledge layer.
 
+This file owns memory policy, not the step-by-step operating workflow. Use `project-knowledge` to apply this policy, `research-to-knowledge` to gather or verify external evidence, `write-agent-handoff` for temporary transfer state, and `write-agent-skill` for procedural skills and evals.
+
 ## Principle
 
 Persistent memory is privileged input. Treat every durable memory write as something a future agent may retrieve and use to make decisions.
@@ -52,21 +54,17 @@ Generated files, search hits, vector results, graph neighborhoods, tool outputs,
 
 Do not collapse these layers. Common failures come from treating temporary episodes as durable facts, hiding durable facts inside skills, or putting agent procedure into project docs.
 
-## Read Protocol
+## Read Policy
 
-Use memory by relevance and risk, not by bulk-loading everything.
+Use memory by relevance and risk, not by bulk-loading everything. `project-knowledge` owns the default step-by-step read workflow.
 
-1. Read `AGENTS.md` first for the current instruction contract.
-2. Use `llms.txt` as the compact generated navigation map.
-3. Search authored docs with exact terms, likely synonyms, canonical IDs, code paths, error text, decision names, and workflow words such as deploy, migrate, test, auth, release, review, handoff, or rollback.
-4. Open the smallest likely canonical owner.
-5. Follow only relevant `code_refs`, `verified_by`, `source_refs`, `depends_on`, `related`, `supersedes`, and `superseded_by`.
-6. For high-impact work, verify currentness against code, tests, commands, accepted decisions, user direction, or current external sources.
-7. Stop when more reading is unlikely to change the next action.
-
-Do not scan `.context/`, `legacy/`, raw logs, transcripts, screenshots, dumps, vector neighborhoods, graph neighborhoods, or all docs unless the task explicitly requires that source.
-
-If no owner exists, say that no durable owner is captured and fall back to code, tests, current sources, or user-provided facts.
+- Start from repository instructions and generated navigation only to locate authored owners.
+- Prefer the smallest relevant authored owner under `docs/`.
+- Treat generated indexes, adapters, vector hits, graph neighborhoods, logs, issues, comments, transcripts, and runtime artifacts as leads, not authority.
+- Follow only metadata links and evidence references that can change the next action.
+- Verify high-impact claims against code, tests, commands, accepted decisions, user direction, or current external sources.
+- Do not scan `.context/`, `legacy/`, raw logs, transcripts, screenshots, dumps, vector neighborhoods, graph neighborhoods, or all docs unless the task explicitly requires that source.
+- If no owner exists, say that no durable owner is captured and fall back to code, tests, current sources, or user-provided facts.
 
 ## Knowledge Gap Protocol
 
@@ -99,7 +97,7 @@ If any answer is missing, do not make the memory durable. Use a draft, handoff, 
 
 ## Routing
 
-Choose the most durable applicable destination:
+Choose the most durable applicable destination. Route by canonical owner and evidence first, then by path. Do not create a document only because a directory exists.
 
 | Information | Destination | Rule |
 | --- | --- | --- |
@@ -119,6 +117,30 @@ Choose the most durable applicable destination:
 | Personal/private note, secret, customer data | Outside repository | Never commit to portable memory. |
 
 When uncertain between creating a new doc and updating an existing one, update the existing canonical owner unless the topic boundary would become unclear.
+
+Default `docs/` directory routing:
+
+| Directory | Use For | Avoid |
+| --- | --- | --- |
+| `docs/architecture/` | System structure, boundaries, invariants, cross-cutting ownership | One component's interface or a temporary implementation plan. |
+| `docs/components/` | One bounded module, service, UI component, adapter, or package | Whole-system architecture or generic domain rules. |
+| `docs/domain/` | Business concepts, entities, lifecycle states, rules, invariants | Implementation details unless they enforce the domain rule. |
+| `docs/workflows/` | Repeated project processes across roles, states, or repositories | Exact operational commands; use a runbook. |
+| `docs/runbooks/` | Repeatable operations with trigger, preconditions, steps, verification, rollback, or recovery | Broad process explanation or one-off plans. |
+| `docs/decisions/` | Proposed or accepted choices, tradeoffs, alternatives, consequences | Facts that are not decisions. |
+| `docs/research/` | Source-backed external findings worth retaining | Raw links, unverified notes, or project facts owned elsewhere. |
+| `docs/plans/` | Durable multi-step initiatives with status and exit condition | Tiny todos or final facts; promote final knowledge to its owner. |
+| `docs/reference/` | Stable lookup material: API tables, command matrices, config maps, external IDs | Catch-all memory; choose a stronger owner when possible. |
+| `docs/glossary/` | Terms, aliases, acronyms, canonical names, short examples | Full domain rules; use a domain owner. |
+
+Overlap rules:
+
+- Runbook beats workflow when an operator can execute it step by step.
+- Decision beats architecture when the main value is why a choice was made.
+- Component beats architecture when the scope is one bounded module or service.
+- Domain beats glossary when a term carries rules, lifecycle, or invariants.
+- Reference is a last-resort owner for stable lookup tables, not a dump drawer.
+- Plans expire: complete, supersede, archive, or promote final facts into canonical owners.
 
 ## Lifecycle
 

@@ -4,6 +4,13 @@
 
 No unreleased changes.
 
+## 0.1.8 - 2026-05-25
+
+- Clarified the project knowledge skill's read and retrieval flow so agents use generated navigation as a locator, rank authored owners by evidence, and report knowledge gaps instead of bulk-reading or inventing missing process.
+- Clarified memory policy boundaries between policy, operating workflow, external research, handoffs, and procedural skills.
+- Added compact `docs/` directory routing and overlap rules to the memory policy.
+- Added eval coverage for finding a canonical deployment process without reading every document.
+
 ## 0.1.7 - 2026-05-24
 
 - Added `update --full` as an explicit full reinstall path that archives the current core layer and reapplies the package payload.
