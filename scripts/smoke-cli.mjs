@@ -1,0 +1,204 @@
+#!/usr/bin/env node
+
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import process from "node:process";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const payloadRoot = path.join(repoRoot, "payload");
+const cli = path.join(repoRoot, "bin/agentic-workspace-core.mjs");
+const target = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-"));
+const skipCheckTarget = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-skip-check-"));
+
+try {
+  assertPayloadComplete();
+  runCli(["init", "--target", skipCheckTarget, "--yes", "--skip-check"]);
+  verifyInstalledCore(skipCheckTarget);
+  runCli(["init", "--target", target, "--yes"]);
+  verifyInstalledCore(target);
+  addLocalOverrides(target);
+  runCli(["update", "--target", target, "--yes"]);
+  verifyInstalledCore(target);
+  verifyLocalOverrides(target);
+  console.log(`CLI smoke passed: ${target}`);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
+
+function runCli(args) {
+  const result = spawnSync(process.execPath, [cli, ...args], {
+    cwd: repoRoot,
+    stdio: "inherit"
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`CLI command failed: ${args.join(" ")}`);
+  }
+}
+
+function assertPayloadComplete() {
+  const required = [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "gitignore",
+    "llms.txt",
+    "docs/index.md",
+    "docs/knowledge-system.md",
+    "docs/generated/knowledge-map.md",
+    "docs/generated/knowledge-graph.json",
+    "docs/architecture/.gitkeep",
+    "docs/components/.gitkeep",
+    "docs/domain/.gitkeep",
+    "docs/workflows/.gitkeep",
+    "docs/runbooks/.gitkeep",
+    "docs/decisions/.gitkeep",
+    "docs/research/.gitkeep",
+    "docs/plans/.gitkeep",
+    "docs/reference/.gitkeep",
+    "docs/glossary/.gitkeep",
+    ".agents/README.md",
+    ".agents/knowledge.config.json",
+    ".agents/knowledge-core/manifest.json",
+    ".agents/knowledge-core/scripts/build-index.mjs",
+    ".agents/knowledge-core/scripts/doctor.mjs",
+    ".agents/skills/project-knowledge/SKILL.md",
+    ".agents/skills/research-to-knowledge/SKILL.md",
+    ".agents/skills/software-development-workflow/SKILL.md",
+    ".agents/skills/software-development-workflow/references/task-contract.md",
+    ".agents/skills/software-development-workflow/references/context-plan.md",
+    ".agents/skills/software-development-workflow/references/implementation-loop.md",
+    ".agents/skills/software-development-workflow/references/debugging-loop.md",
+    ".agents/skills/software-development-workflow/references/security-gate.md",
+    ".agents/skills/software-development-workflow/references/done-gate.md",
+    ".agents/skills/write-agent-handoff/SKILL.md",
+    ".agents/skills/write-agent-skill/SKILL.md",
+    ".agents/evals/skills/software-development-workflow.eval.md"
+  ];
+
+  const missing = required.filter((file) => !fs.existsSync(path.join(payloadRoot, file)));
+  if (missing.length > 0) throw new Error(`Payload is incomplete:\n${missing.join("\n")}`);
+
+  const config = readJson(path.join(payloadRoot, ".agents/knowledge.config.json"));
+  const configuredDocDirs = config.documents?.defaultDirectories || [];
+  const missingDocDirs = configuredDocDirs
+    .map((dir) => `${dir}/.gitkeep`)
+    .filter((file) => !fs.existsSync(path.join(payloadRoot, file)));
+  if (missingDocDirs.length > 0) {
+    throw new Error(`Payload docs skeleton does not match config.documents.defaultDirectories:\n${missingDocDirs.join("\n")}`);
+  }
+
+}
+
+function addLocalOverrides(root) {
+  const configPath = path.join(root, ".agents/knowledge.config.json");
+  const config = readJson(configPath);
+  config.project.localFlag = "keep-me";
+  config.documents.defaultDirectories.push("docs/custom");
+  config.ignore.paths.push("tmp-local/**");
+  config.ignore.authoredDocs.push("docs/private/**");
+  writeJson(configPath, config);
+
+  const customDocsDir = path.join(root, "docs/custom");
+  fs.mkdirSync(customDocsDir, { recursive: true });
+  fs.writeFileSync(path.join(customDocsDir, ".gitkeep"), "");
+
+  const skillDir = path.join(root, ".agents/skills/local-reviewer");
+  fs.mkdirSync(skillDir, { recursive: true });
+  fs.writeFileSync(path.join(skillDir, "SKILL.md"), `---
+name: local-reviewer
+description: Use for local project review conventions.
+---
+
+# Local Reviewer
+
+Project-local skill kept across core updates.
+`);
+
+  const evalDir = path.join(root, ".agents/evals/skills");
+  fs.mkdirSync(evalDir, { recursive: true });
+  fs.writeFileSync(path.join(evalDir, "local-reviewer.eval.md"), `# local-reviewer Eval
+
+## Should Trigger
+
+| Prompt | Expected Behavior |
+| --- | --- |
+| "Apply our local review convention." | Loads the local project review skill. |
+
+## Should Not Trigger
+
+| Prompt | Expected Behavior |
+| --- | --- |
+| "Review this third-party skill." | Uses write-agent-skill instead. |
+
+## Edge Cases
+
+| Prompt | Expected Behavior |
+| --- | --- |
+| "Review code and also consider local conventions." | Uses the development workflow and may consult this local skill if available. |
+`);
+}
+
+function verifyInstalledCore(root) {
+  const required = [
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".gitignore",
+    "llms.txt",
+    "docs/index.md",
+    "docs/knowledge-system.md",
+    "docs/generated/knowledge-map.md",
+    "docs/generated/knowledge-graph.json",
+    "docs/architecture/.gitkeep",
+    "docs/research/.gitkeep",
+    ".agents/README.md",
+    ".agents/knowledge.config.json",
+    ".agents/knowledge-core/manifest.json",
+    ".agents/skills/software-development-workflow/SKILL.md",
+    ".agents/skills/software-development-workflow/references/done-gate.md",
+    ".agents/evals/skills/software-development-workflow.eval.md"
+  ];
+  const missing = required.filter((file) => !fs.existsSync(path.join(root, file)));
+  if (missing.length > 0) throw new Error(`Installed core is incomplete:\n${missing.join("\n")}`);
+
+  const config = readJson(path.join(root, ".agents/knowledge.config.json"));
+  const configuredDocDirs = config.documents?.defaultDirectories || [];
+  const missingDocDirs = configuredDocDirs
+    .map((dir) => `${dir}/.gitkeep`)
+    .filter((file) => !fs.existsSync(path.join(root, file)));
+  if (missingDocDirs.length > 0) {
+    throw new Error(`Installed docs skeleton does not match config.documents.defaultDirectories:\n${missingDocDirs.join("\n")}`);
+  }
+
+  const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf8");
+  if (!gitignore.includes(".context/") || !gitignore.includes("CLAUDE.local.md")) {
+    throw new Error("Installed .gitignore is missing required local runtime ignores");
+  }
+}
+
+function verifyLocalOverrides(root) {
+  const config = readJson(path.join(root, ".agents/knowledge.config.json"));
+  const checks = [
+    [config.project.localFlag === "keep-me", "project localFlag was not preserved"],
+    [config.documents.defaultDirectories.includes("docs/custom"), "custom docs directory was not preserved"],
+    [config.ignore.paths.includes("tmp-local/**"), "custom ignore path was not preserved"],
+    [config.ignore.authoredDocs.includes("docs/private/**"), "custom ignored doc pattern was not preserved"],
+    [fs.existsSync(path.join(root, "docs/custom/.gitkeep")), "custom docs directory was not preserved"],
+    [fs.existsSync(path.join(root, ".agents/skills/local-reviewer/SKILL.md")), "custom skill was not preserved"],
+    [fs.existsSync(path.join(root, ".agents/evals/skills/local-reviewer.eval.md")), "custom skill eval was not preserved"]
+  ];
+
+  const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);
+  if (failed.length > 0) throw new Error(failed.join("\n"));
+}
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
+function writeJson(file, value) {
+  fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+}

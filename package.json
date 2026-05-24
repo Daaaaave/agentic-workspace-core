@@ -4,10 +4,24 @@
   "private": true,
   "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
   "type": "module",
+  "bin": {
+    "agentic-workspace-core": "bin/agentic-workspace-core.mjs"
+  },
+  "files": [
+    "bin/",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "payload/",
+    "README.md",
+    "SECURITY.md",
+    "docs/reference/core-portability-contract.md"
+  ],
   "scripts": {
-    "knowledge:build": "node .agents/knowledge-core/scripts/build-index.mjs",
-    "knowledge:doctor": "node .agents/knowledge-core/scripts/doctor.mjs",
-    "knowledge:check": "node .agents/knowledge-core/scripts/build-index.mjs --check && npm run knowledge:doctor"
+    "knowledge:build": "cd payload && node .agents/knowledge-core/scripts/build-index.mjs",
+    "knowledge:doctor": "node scripts/doctor-payload.mjs",
+    "knowledge:check": "cd payload && node .agents/knowledge-core/scripts/build-index.mjs --check && cd .. && node scripts/doctor-payload.mjs",
+    "smoke": "node scripts/smoke-cli.mjs"
   },
   "engines": {
     "node": ">=20"

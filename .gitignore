@@ -1,5 +1,4 @@
 .DS_Store
-.context/
 node_modules/
 dist/
 coverage/
@@ -7,3 +6,16 @@ coverage/
 .env.*
 !.env.example
 *.log
+
+# Local dogfooding/runtime state for this source repository.
+# The public package surface lives in payload/ and selected package docs.
+/.agents
+/AGENTS.md
+/CLAUDE.md
+/CLAUDE.local.md
+/llms.txt
+/.context/
+/docs/*
+!/docs/reference/
+/docs/reference/*
+!/docs/reference/core-portability-contract.md
