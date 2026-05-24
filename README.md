@@ -46,7 +46,7 @@ Managed paths that may be replaced:
 - `docs/`
 - `llms.txt`
 
-Before replacement, `init` moves existing agent-facing context into root `legacy/` with original relative paths preserved. That includes old instruction files, existing `.agents/`, existing `docs/`, old `llms*.txt` indexes, common AI-tool rule/config directories, and MCP config files. `legacy/` is ignored by git and is not treated as active project knowledge.
+Before replacement, `init` moves existing agent-facing context into root `legacy/` with original relative paths preserved. That includes old instruction files, existing `.agents/`, existing `docs/`, old `llms*.txt` indexes, common AI-tool rule/config directories, and MCP config files. `update` also moves known obsolete agent-facing paths from earlier package layouts into `legacy/`. `legacy/` is ignored by git and is not treated as active project knowledge.
 
 Use the dry run first on existing repositories.
 
@@ -64,7 +64,7 @@ npm run knowledge:check
 - replaces core-managed files and upstream starter skills
 - preserves project-specific skill directories and evals
 - preserves safe local config extensions
-- removes obsolete managed paths from older package layouts
+- moves obsolete agent-facing paths from older package layouts into `legacy/`
 - always rebuilds generated indexes
 
 `--skip-check` still rebuilds `llms.txt` and `.agents/generated/*`; it only skips validation checks.

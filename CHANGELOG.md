@@ -4,6 +4,12 @@
 
 No unreleased changes.
 
+## 0.1.6 - 2026-05-24
+
+- Changed `update` to archive known obsolete agent-facing paths into `legacy/` instead of leaving stale package docs active or deleting old managed paths.
+- Added guarded cleanup for obsolete package-owned `docs/index.md` and `docs/knowledge-system.md` documents so they no longer remain in `llms.txt` after update.
+- Added smoke coverage proving update cleanup archives obsolete paths and rebuilds indexes without stale package docs.
+
 ## 0.1.5 - 2026-05-24
 
 - Changed `--skip-check` so install/update still rebuild generated indexes and only skips validation checks.

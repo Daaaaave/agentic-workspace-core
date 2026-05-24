@@ -28,9 +28,19 @@ const updateBaseReplaceEntries = [
   [".agents/knowledge-core", ".agents/knowledge-core"]
 ];
 
-const obsoleteManagedPaths = [
-  [".agents/README.md", "obsolete agent layer index"],
-  ["docs/generated", "old generated index location"]
+const obsoleteManagedArchiveEntries = [
+  { target: ".agents/README.md", reason: "obsolete agent layer index" },
+  { target: "docs/generated", reason: "old generated index location" },
+  {
+    target: "docs/index.md",
+    reason: "obsolete package docs home",
+    mustContain: "id: project.index"
+  },
+  {
+    target: "docs/knowledge-system.md",
+    reason: "obsolete package knowledge-system policy",
+    mustContain: "id: project.knowledge-system"
+  }
 ];
 
 const legacyAgentEntries = [
@@ -257,11 +267,19 @@ async function update(flags) {
 
   if (flags.dryRun) return;
 
+  let archiveResult = null;
+  if (!flags.skipCheck && !flags.allowBroken && plan.archive.length > 0) {
+    archiveResult = archiveLegacyAgentContext(plan, flags.target);
+    if (archiveResult.moved.length > 0) {
+      runNodeScript(flags.target, ".agents/knowledge-core/scripts/build-index.mjs");
+    }
+  }
+
   if (!flags.skipCheck && !flags.allowBroken) {
     runNpmScript(flags.target, "knowledge:check", "Baseline knowledge check failed. Fix it first or rerun with --allow-broken.");
   }
 
-  applyPlan(plan, flags);
+  applyPlan(plan, flags, archiveResult);
 
   console.log(`Agentic Workspace Core updated: ${installedManifest.version} -> ${packageManifest.version}.`);
 }
@@ -272,7 +290,7 @@ function buildPlan(targetRoot, mode, metadata = {}) {
     target,
     existed: fs.existsSync(path.join(targetRoot, target))
   }));
-  const archive = mode === "init" ? buildLegacyArchiveEntries(targetRoot, replace) : [];
+  const archive = buildArchiveEntries(targetRoot, mode, replace);
 
   return {
     mode,
@@ -284,8 +302,7 @@ function buildPlan(targetRoot, mode, metadata = {}) {
     packageJson: fs.existsSync(path.join(targetRoot, "package.json")) ? "update scripts" : "create with scripts",
     gitignore: fs.existsSync(path.join(targetRoot, ".gitignore")) ? "ensure local runtime ignores" : "create",
     generatedRoot: getSourceGeneratedRoot(),
-    generated: fs.existsSync(path.join(targetRoot, getSourceGeneratedRoot())) ? "reset and rebuild" : "create",
-    remove: mode === "update" ? buildObsoleteManagedEntries(targetRoot) : []
+    generated: fs.existsSync(path.join(targetRoot, getSourceGeneratedRoot())) ? "reset and rebuild" : "create"
   };
 }
 
@@ -298,8 +315,13 @@ function buildReplaceEntries(mode) {
   ];
 }
 
-function buildLegacyArchiveEntries(targetRoot, replaceEntries) {
-  const candidates = [
+function buildArchiveEntries(targetRoot, mode, replaceEntries) {
+  const candidates = mode === "init" ? initArchiveCandidates(targetRoot, replaceEntries) : updateArchiveCandidates(targetRoot);
+  return selectArchiveEntries(targetRoot, candidates);
+}
+
+function initArchiveCandidates(targetRoot, replaceEntries) {
+  return [
     ...replaceEntries
       .filter((action) => action.existed)
       .map((action) => ({
@@ -309,13 +331,23 @@ function buildLegacyArchiveEntries(targetRoot, replaceEntries) {
     ...legacyAgentEntries.map(([target, reason]) => ({ target, reason })),
     ...discoverLegacyAgentPatternEntries(targetRoot)
   ];
+}
 
+function updateArchiveCandidates(targetRoot) {
+  return [
+    ...obsoleteManagedArchiveEntries,
+    ...legacyAgentEntries.map(([target, reason]) => ({ target, reason })),
+    ...discoverLegacyAgentPatternEntries(targetRoot)
+  ];
+}
+
+function selectArchiveEntries(targetRoot, candidates) {
   const seen = new Set();
   const existing = [];
   for (const candidate of candidates) {
     const target = normalizeRelativePath(candidate.target);
     if (!target || seen.has(target)) continue;
-    const resolved = resolveExistingArchiveTarget(targetRoot, target);
+    const resolved = resolveExistingArchiveTarget(targetRoot, { ...candidate, target });
     if (!resolved || seen.has(resolved.identity)) continue;
     seen.add(target);
     seen.add(resolved.identity);
@@ -333,16 +365,42 @@ function buildLegacyArchiveEntries(targetRoot, replaceEntries) {
   return selected;
 }
 
-function resolveExistingArchiveTarget(targetRoot, target) {
-  const absolute = path.join(targetRoot, target);
-  if (!fs.existsSync(absolute)) return null;
+function resolveExistingArchiveTarget(targetRoot, candidate) {
+  const absolute = resolveExactPath(targetRoot, candidate.target);
+  if (!absolute) return null;
+  if (!archiveCandidateMatches(absolute, candidate)) return null;
 
   const identity = archivePathIdentity(absolute);
   const realTarget = realRelativePath(targetRoot, absolute);
   return {
-    target: realTarget || target,
+    target: realTarget || candidate.target,
     identity
   };
+}
+
+function resolveExactPath(root, relativeTarget) {
+  const parts = relativeTarget.split("/");
+  let current = root;
+
+  for (const part of parts) {
+    if (!fs.existsSync(current) || !fs.statSync(current).isDirectory()) return null;
+    const entries = fs.readdirSync(current);
+    if (!entries.includes(part)) return null;
+    current = path.join(current, part);
+  }
+
+  return current;
+}
+
+function archiveCandidateMatches(absolute, candidate) {
+  if (!candidate.mustContain) return true;
+
+  try {
+    if (!fs.statSync(absolute).isFile()) return false;
+    return fs.readFileSync(absolute, "utf8").includes(candidate.mustContain);
+  } catch {
+    return false;
+  }
 }
 
 function archivePathIdentity(absolute) {
@@ -400,12 +458,6 @@ function getSourceGeneratedRoot() {
   return isSafeRelativePath(sourceConfig.paths?.generatedRoot) ? sourceConfig.paths.generatedRoot : ".agents/generated";
 }
 
-function buildObsoleteManagedEntries(targetRoot) {
-  return obsoleteManagedPaths
-    .map(([target, reason]) => ({ target, reason, existed: fs.existsSync(path.join(targetRoot, target)) }))
-    .filter((entry) => entry.existed);
-}
-
 function printPlan(plan, flags, mode) {
   const verb = flags.dryRun ? "would replace" : "will replace";
   console.log(`Agentic Workspace Core ${mode} target: ${flags.target}`);
@@ -421,25 +473,21 @@ function printPlan(plan, flags, mode) {
   if (mode === "update") {
     console.log(`- .agents/knowledge.config.json (${plan.knowledgeConfig})`);
   }
-  if (mode === "init" && plan.archive.length > 0) {
+  if (plan.archive.length > 0) {
     const archiveVerb = flags.dryRun ? "would move" : "will move";
     console.log("");
-    console.log(`Legacy agent context ${archiveVerb} to ${plan.archiveRoot}:`);
+    console.log(`${archiveLabel(mode)} ${archiveVerb} to ${plan.archiveRoot}:`);
     for (const entry of plan.archive) {
       console.log(`- ${entry.target} (${entry.reason})`);
     }
-  }
-  if (mode === "update" && plan.remove.length > 0) {
     console.log("");
-    console.log("Obsolete managed paths will be removed:");
-    for (const entry of plan.remove) {
-      console.log(`- ${entry.target} (${entry.reason})`);
-    }
   }
+  console.log("Other updates:");
   console.log(`- package.json (${plan.packageJson})`);
   console.log(`- .gitignore (${plan.gitignore})`);
   if (mode === "update" && !flags.skipCheck && !flags.allowBroken) {
-    console.log("- baseline knowledge:check before replacement");
+    const baselineTiming = plan.archive.length > 0 ? "after obsolete archive" : "before replacement";
+    console.log(`- baseline knowledge:check ${baselineTiming}`);
   }
   if (!plan.replace.some((action) => isPathInside(plan.generatedRoot, action.target))) {
     console.log(`- ${plan.generatedRoot} (${plan.generated})`);
@@ -448,8 +496,8 @@ function printPlan(plan, flags, mode) {
   console.log("");
 }
 
-function applyPlan(plan, flags) {
-  const archiveResult = archiveLegacyAgentContext(plan, flags.target);
+function applyPlan(plan, flags, existingArchiveResult = null) {
+  const archiveResult = existingArchiveResult || archiveLegacyAgentContext(plan, flags.target);
 
   for (const action of plan.replace) {
     const source = path.join(payloadRoot, action.source);
@@ -461,7 +509,6 @@ function applyPlan(plan, flags) {
   ensureDocDirectories(flags.target);
   updatePackageJson(flags.target);
   updateGitignore(flags.target);
-  removeObsoleteManagedPaths(plan, flags.target);
 
   resetGenerated(flags.target);
   runNodeScript(flags.target, ".agents/knowledge-core/scripts/build-index.mjs");
@@ -474,14 +521,12 @@ function applyPlan(plan, flags) {
   }
 }
 
-function removeObsoleteManagedPaths(plan, targetRoot) {
-  for (const entry of plan.remove || []) {
-    fs.rmSync(path.join(targetRoot, entry.target), { recursive: true, force: true });
-  }
+function archiveLabel(mode) {
+  return mode === "init" ? "Legacy agent context" : "Legacy/obsolete agent context";
 }
 
 function archiveLegacyAgentContext(plan, targetRoot) {
-  if (plan.mode !== "init" || plan.archive.length === 0) return null;
+  if (plan.archive.length === 0) return null;
 
   const relativeRoot = plan.archiveRoot;
   const absoluteRoot = path.join(targetRoot, relativeRoot);
@@ -500,7 +545,7 @@ function archiveLegacyAgentContext(plan, targetRoot) {
   if (moved.length > 0) {
     fs.mkdirSync(absoluteRoot, { recursive: true });
     const { destination } = nextAvailableArchivePath(absoluteRoot, "MANIFEST.md");
-    fs.writeFileSync(destination, legacyManifest(relativeRoot, moved));
+    fs.writeFileSync(destination, legacyManifest(relativeRoot, moved, plan.mode));
   }
 
   return { relativeRoot, moved };
@@ -519,13 +564,13 @@ function movePath(source, destination) {
   }
 }
 
-function legacyManifest(relativeRoot, moved) {
+function legacyManifest(relativeRoot, moved, mode) {
   const lines = [
     "# Legacy Agent Context Archive",
     "",
     `Created: ${new Date().toISOString()}`,
     "",
-    "These files were moved by `agentic-workspace-core init` before installing the clean core agent layer.",
+    `These files were moved by \`agentic-workspace-core ${mode}\` while maintaining the clean core agent layer.`,
     "They are preserved for review, but should not be treated as active project instructions.",
     "",
     `Archive path: \`${relativeRoot}\``,
@@ -809,7 +854,7 @@ function printUpdateHelp() {
   console.log(`Usage:
   agentic-workspace-core update [options]
 
-Updates core-managed paths and starter skills while preserving project-specific skills/evals and safe local config extensions.
+Updates core-managed paths and starter skills while preserving project-specific skills/evals and safe local config extensions. Obsolete agent-facing paths are moved to legacy/.
 
 Options:
   --target, -C <dir>  Directory to update. Defaults to current directory.
