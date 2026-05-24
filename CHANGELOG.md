@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-No unreleased changes.
+- Reworked the README around public project onboarding, install/update safety, and package maintainer workflow.
 
 ## 0.1.1 - 2026-05-24
 
