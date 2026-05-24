@@ -12,6 +12,7 @@ Purpose: verify that `project-knowledge` triggers for shared repository knowledg
 | "Where should this new database decision live in the knowledge core?" | Loads the skill and uses routing/schema/lifecycle rules to choose destination, type, and status. |
 | "Docs say we use Prisma, but code shows Drizzle. Fix the project knowledge." | Loads the skill, applies correction/conflict protocol, updates the canonical owner, rebuilds indexes, and validates. |
 | "This migration test failed with a known-looking error. Check if project memory has a previous fix before trying again." | Loads the skill, searches by exact symptom and workflow dimension, then reads the likely owner before further debugging. |
+| "Find the canonical deployment process without reading every doc." | Loads the skill, uses retrieval heuristics and generated navigation, searches deployment/release/runbook/workflow terms, opens the smallest canonical owner, and reports a gap if none exists. |
 | "Crystallize the useful lessons from this debugging session into project memory." | Loads the skill, filters session details, promotes only durable owned findings, and skips raw transcript/status. |
 | "This user correction should stop future agents from making the same mistake." | Loads the skill, decides whether the correction is semantic project knowledge or procedural skill behavior, then routes accordingly. |
 | "The docs feel duplicated and stale. Defrag the project knowledge." | Loads the skill, uses maintenance protocol, proposes or performs merge/split/archive updates, and validates. |
