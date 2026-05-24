@@ -4,6 +4,11 @@
 
 No unreleased changes.
 
+## 0.1.7 - 2026-05-24
+
+- Added `update --full` as an explicit full reinstall path that archives the current core layer and reapplies the package payload.
+- Added smoke coverage proving full update replaces `AGENTS.md`, `CLAUDE.md`, `.agents/`, `docs/`, `llms.txt`, and local config with clean payload state while preserving archived copies in `legacy/`.
+
 ## 0.1.6 - 2026-05-24
 
 - Changed `update` to archive known obsolete agent-facing paths into `legacy/` instead of leaving stale package docs active or deleting old managed paths.

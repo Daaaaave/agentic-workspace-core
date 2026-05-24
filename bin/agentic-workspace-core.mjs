@@ -166,7 +166,8 @@ function parseFlags(values) {
     yes: false,
     dryRun: false,
     skipCheck: false,
-    allowBroken: false
+    allowBroken: false,
+    full: false
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -196,6 +197,10 @@ function parseFlags(values) {
     }
     if (arg === "--allow-broken") {
       flags.allowBroken = true;
+      continue;
+    }
+    if (arg === "--full") {
+      flags.full = true;
       continue;
     }
     if (arg === "--help" || arg === "-h") {
@@ -261,21 +266,22 @@ async function update(flags) {
   const installedManifest = readInstalledManifest(flags.target);
   const plan = buildPlan(flags.target, "update", {
     currentVersion: installedManifest.version,
-    targetVersion: packageManifest.version
+    targetVersion: packageManifest.version,
+    full: flags.full
   });
   printPlan(plan, flags, "update");
 
   if (flags.dryRun) return;
 
   let archiveResult = null;
-  if (!flags.skipCheck && !flags.allowBroken && plan.archive.length > 0) {
+  if (!plan.full && !flags.skipCheck && !flags.allowBroken && plan.archive.length > 0) {
     archiveResult = archiveLegacyAgentContext(plan, flags.target);
     if (archiveResult.moved.length > 0) {
       runNodeScript(flags.target, ".agents/knowledge-core/scripts/build-index.mjs");
     }
   }
 
-  if (!flags.skipCheck && !flags.allowBroken) {
+  if (!plan.full && !flags.skipCheck && !flags.allowBroken) {
     runNpmScript(flags.target, "knowledge:check", "Baseline knowledge check failed. Fix it first or rerun with --allow-broken.");
   }
 
@@ -285,12 +291,12 @@ async function update(flags) {
 }
 
 function buildPlan(targetRoot, mode, metadata = {}) {
-  const replace = buildReplaceEntries(mode).map(([source, target]) => ({
+  const replace = buildReplaceEntries(mode, metadata).map(([source, target]) => ({
     source,
     target,
     existed: fs.existsSync(path.join(targetRoot, target))
   }));
-  const archive = buildArchiveEntries(targetRoot, mode, replace);
+  const archive = buildArchiveEntries(targetRoot, mode, replace, metadata);
 
   return {
     mode,
@@ -298,7 +304,7 @@ function buildPlan(targetRoot, mode, metadata = {}) {
     replace,
     archive,
     archiveRoot: archive.length > 0 ? legacyArchiveRootForPlan() : null,
-    knowledgeConfig: mode === "update" ? "structured update" : "replace",
+    knowledgeConfig: mode === "update" && !metadata.full ? "structured update" : "replace",
     packageJson: fs.existsSync(path.join(targetRoot, "package.json")) ? "update scripts" : "create with scripts",
     gitignore: fs.existsSync(path.join(targetRoot, ".gitignore")) ? "ensure local runtime ignores" : "create",
     generatedRoot: getSourceGeneratedRoot(),
@@ -306,8 +312,8 @@ function buildPlan(targetRoot, mode, metadata = {}) {
   };
 }
 
-function buildReplaceEntries(mode) {
-  if (mode === "init") return initReplaceEntries;
+function buildReplaceEntries(mode, metadata = {}) {
+  if (mode === "init" || metadata.full) return initReplaceEntries;
 
   return [
     ...updateBaseReplaceEntries,
@@ -315,8 +321,10 @@ function buildReplaceEntries(mode) {
   ];
 }
 
-function buildArchiveEntries(targetRoot, mode, replaceEntries) {
-  const candidates = mode === "init" ? initArchiveCandidates(targetRoot, replaceEntries) : updateArchiveCandidates(targetRoot);
+function buildArchiveEntries(targetRoot, mode, replaceEntries, metadata = {}) {
+  const candidates = mode === "init" || metadata.full
+    ? initArchiveCandidates(targetRoot, replaceEntries)
+    : updateArchiveCandidates(targetRoot);
   return selectArchiveEntries(targetRoot, candidates);
 }
 
@@ -463,6 +471,7 @@ function printPlan(plan, flags, mode) {
   console.log(`Agentic Workspace Core ${mode} target: ${flags.target}`);
   if (mode === "update") {
     console.log(`Version: ${plan.currentVersion} -> ${plan.targetVersion}`);
+    if (plan.full) console.log("Mode: full reinstall");
   }
   console.log("");
   console.log(`Managed paths ${verb}:`);
@@ -470,13 +479,13 @@ function printPlan(plan, flags, mode) {
     const marker = action.existed ? "overwrite" : "create";
     console.log(`- ${action.target} (${marker})`);
   }
-  if (mode === "update") {
+  if (mode === "update" && !plan.full) {
     console.log(`- .agents/knowledge.config.json (${plan.knowledgeConfig})`);
   }
   if (plan.archive.length > 0) {
     const archiveVerb = flags.dryRun ? "would move" : "will move";
     console.log("");
-    console.log(`${archiveLabel(mode)} ${archiveVerb} to ${plan.archiveRoot}:`);
+    console.log(`${archiveLabel(mode, plan.full)} ${archiveVerb} to ${plan.archiveRoot}:`);
     for (const entry of plan.archive) {
       console.log(`- ${entry.target} (${entry.reason})`);
     }
@@ -485,7 +494,7 @@ function printPlan(plan, flags, mode) {
   console.log("Other updates:");
   console.log(`- package.json (${plan.packageJson})`);
   console.log(`- .gitignore (${plan.gitignore})`);
-  if (mode === "update" && !flags.skipCheck && !flags.allowBroken) {
+  if (mode === "update" && !plan.full && !flags.skipCheck && !flags.allowBroken) {
     const baselineTiming = plan.archive.length > 0 ? "after obsolete archive" : "before replacement";
     console.log(`- baseline knowledge:check ${baselineTiming}`);
   }
@@ -505,7 +514,7 @@ function applyPlan(plan, flags, existingArchiveResult = null) {
     replacePath(source, target);
   }
 
-  updateKnowledgeConfig(flags.target, plan.mode);
+  updateKnowledgeConfig(flags.target, plan.mode, plan.full);
   ensureDocDirectories(flags.target);
   updatePackageJson(flags.target);
   updateGitignore(flags.target);
@@ -521,7 +530,8 @@ function applyPlan(plan, flags, existingArchiveResult = null) {
   }
 }
 
-function archiveLabel(mode) {
+function archiveLabel(mode, full = false) {
+  if (full) return "Current core layer";
   return mode === "init" ? "Legacy agent context" : "Legacy/obsolete agent context";
 }
 
@@ -620,10 +630,10 @@ function replacePath(source, target) {
   fs.cpSync(source, target, { recursive: true, force: true, errorOnExist: false });
 }
 
-function updateKnowledgeConfig(targetRoot, mode) {
+function updateKnowledgeConfig(targetRoot, mode, full = false) {
   const sourceConfig = readJson(path.join(payloadRoot, ".agents/knowledge.config.json"));
   const targetConfigPath = path.join(targetRoot, ".agents/knowledge.config.json");
-  if (mode !== "update") {
+  if (mode !== "update" || full) {
     writeJson(targetConfigPath, sourceConfig);
     return;
   }
@@ -834,7 +844,7 @@ function printHelp() {
 
 Usage:
   agentic-workspace-core init [--target <dir>] [--dry-run] [--skip-check]
-  agentic-workspace-core update [--target <dir>] [--dry-run] [--skip-check] [--allow-broken]
+  agentic-workspace-core update [--target <dir>] [--dry-run] [--skip-check] [--allow-broken] [--full]
   agentic-workspace-core version
 `);
 }
@@ -856,11 +866,14 @@ function printUpdateHelp() {
 
 Updates core-managed paths and starter skills while preserving project-specific skills/evals and safe local config extensions. Obsolete agent-facing paths are moved to legacy/.
 
+Use --full to reinstall the whole core layer from the package payload. Full update archives AGENTS.md, CLAUDE.md, .agents/, docs/, and llms.txt into legacy/ before replacement.
+
 Options:
   --target, -C <dir>  Directory to update. Defaults to current directory.
   --dry-run          Print the update plan without writing files.
   --skip-check       Rebuild generated indexes but skip baseline check and doctor validation.
   --allow-broken     Allow update when the pre-update knowledge check fails.
+  --full             Archive the current core layer and reinstall the full package payload.
 `);
 }
 

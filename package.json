@@ -1,6 +1,6 @@
 {
   "name": "agentic-workspace-core",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
   "license": "MIT",
   "type": "module",

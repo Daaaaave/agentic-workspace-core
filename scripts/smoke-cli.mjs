@@ -31,6 +31,9 @@ try {
   verifyInstalledCore(target);
   verifyLocalOverrides(target);
   verifyLocalKnowledgeIndexed(target);
+  runCli(["update", "--target", target, "--full"]);
+  verifyInstalledCore(target);
+  verifyFullUpdate(target);
   console.log(`CLI smoke passed: ${target}`);
 } catch (error) {
   console.error(error.message);
@@ -409,6 +412,30 @@ function verifyLocalKnowledgeIndexed(root) {
     [!fs.existsSync(path.join(root, "docs/knowledge-system.md")), "obsolete docs/knowledge-system.md was not removed from active docs"],
     [fs.existsSync(path.join(root, "legacy/docs/index.md")), "obsolete docs/index.md was not archived"],
     [fs.existsSync(path.join(root, "legacy/docs/knowledge-system.md")), "obsolete docs/knowledge-system.md was not archived"]
+  ];
+
+  const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);
+  if (failed.length > 0) throw new Error(failed.join("\n"));
+}
+
+function verifyFullUpdate(root) {
+  const config = readJson(path.join(root, ".agents/knowledge.config.json"));
+  const llms = fs.readFileSync(path.join(root, "llms.txt"), "utf8");
+  const activeAgents = fs.readFileSync(path.join(root, "AGENTS.md"), "utf8");
+
+  const checks = [
+    [!config.project.localFlag, "full update preserved local project config"],
+    [!config.documents.defaultDirectories.includes("docs/custom"), "full update preserved custom docs directory config"],
+    [!config.ignore.paths.includes("tmp-local/**"), "full update preserved custom ignore path"],
+    [!fs.existsSync(path.join(root, "docs/custom/local-release.md")), "full update left local docs active"],
+    [!fs.existsSync(path.join(root, ".agents/skills/local-reviewer/SKILL.md")), "full update left local skill active"],
+    [!llms.includes("runbook.local-release"), "full update left local doc in llms.txt"],
+    [!activeAgents.includes("legacy root instructions"), "full update leaked legacy AGENTS content"],
+    [fs.existsSync(path.join(root, "legacy/AGENTS.legacy-2.md")), "full update did not archive active AGENTS.md"],
+    [fs.existsSync(path.join(root, "legacy/CLAUDE.legacy-2.md")), "full update did not archive active CLAUDE.md"],
+    [fs.existsSync(path.join(root, "legacy/.agents.legacy-2/skills/local-reviewer/SKILL.md")), "full update did not archive active .agents"],
+    [fs.existsSync(path.join(root, "legacy/docs.legacy-2/custom/local-release.md")), "full update did not archive active docs"],
+    [fs.existsSync(path.join(root, "legacy/llms.txt")), "full update did not archive active llms.txt"]
   ];
 
   const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);
