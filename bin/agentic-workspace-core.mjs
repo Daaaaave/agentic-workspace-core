@@ -438,15 +438,13 @@ function printPlan(plan, flags, mode) {
   }
   console.log(`- package.json (${plan.packageJson})`);
   console.log(`- .gitignore (${plan.gitignore})`);
-  if (!flags.skipCheck) {
-    if (mode === "update" && !flags.allowBroken) {
-      console.log("- baseline knowledge:check before replacement");
-    }
-    if (!plan.replace.some((action) => isPathInside(plan.generatedRoot, action.target))) {
-      console.log(`- ${plan.generatedRoot} (${plan.generated})`);
-    }
-    console.log("- generated indexes rebuilt and doctor run");
+  if (mode === "update" && !flags.skipCheck && !flags.allowBroken) {
+    console.log("- baseline knowledge:check before replacement");
   }
+  if (!plan.replace.some((action) => isPathInside(plan.generatedRoot, action.target))) {
+    console.log(`- ${plan.generatedRoot} (${plan.generated})`);
+  }
+  console.log(flags.skipCheck ? "- generated indexes rebuilt" : "- generated indexes rebuilt and doctor run");
   console.log("");
 }
 
@@ -465,9 +463,9 @@ function applyPlan(plan, flags) {
   updateGitignore(flags.target);
   removeObsoleteManagedPaths(plan, flags.target);
 
+  resetGenerated(flags.target);
+  runNodeScript(flags.target, ".agents/knowledge-core/scripts/build-index.mjs");
   if (!flags.skipCheck) {
-    resetGenerated(flags.target);
-    runNodeScript(flags.target, ".agents/knowledge-core/scripts/build-index.mjs");
     runNodeScript(flags.target, ".agents/knowledge-core/scripts/doctor.mjs");
   }
 
@@ -803,7 +801,7 @@ function printInitHelp() {
 Options:
   --target, -C <dir>  Directory to initialize. Defaults to current directory.
   --dry-run          Print the init plan without writing files.
-  --skip-check       Skip index rebuild and doctor validation.
+  --skip-check       Rebuild generated indexes but skip doctor validation.
 `);
 }
 
@@ -816,7 +814,7 @@ Updates core-managed paths and starter skills while preserving project-specific 
 Options:
   --target, -C <dir>  Directory to update. Defaults to current directory.
   --dry-run          Print the update plan without writing files.
-  --skip-check       Skip baseline check, index rebuild, and doctor validation.
+  --skip-check       Rebuild generated indexes but skip baseline check and doctor validation.
   --allow-broken     Allow update when the pre-update knowledge check fails.
 `);
 }
