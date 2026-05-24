@@ -257,11 +257,11 @@ After gathering evidence:
 
 Persist research when the user asks to save it or when the result is clearly reusable by future agents.
 
-1. Apply `project-knowledge` and `.agents/knowledge-core/agent-memory-policy.md` before writing durable memory.
+1. Apply `project-knowledge` and `.agents/knowledge-core/memory-policy.md` before writing durable memory.
 2. Search for an existing owner under `docs/research/`, `docs/decisions/`, or another canonical area.
 3. Update the existing owner when possible.
 4. If no owner exists, create a new doc from `.agents/knowledge-core/templates/research.md`.
-5. Follow `.agents/knowledge-core/schema.md`; do not invent arbitrary frontmatter keys.
+5. Follow `.agents/knowledge-core/document-schema.md`; do not invent arbitrary frontmatter keys.
 6. Include `type: research`, accurate `status`, `last_reviewed`, `canonical_for`, and `source_refs`.
 7. Fill the research template sections that apply: Research Brief, Scope And Stop Rule, Existing Knowledge Check, Search And Selection Method, Source Catalog, Evidence Ledger, Findings, Recommendation, Limitations, Persistence And Follow-Up, and Open Questions.
 8. Add `related`, `depends_on`, `code_refs`, or `verified_by` only when they improve retrieval or verification.
@@ -338,7 +338,6 @@ For persistent research, write the canonical doc and summarize:
 ## References
 
 - `.agents/knowledge-core/templates/research.md`
-- `.agents/knowledge-core/routing.md`
-- `.agents/knowledge-core/schema.md`
+- `.agents/knowledge-core/memory-policy.md`
+- `.agents/knowledge-core/document-schema.md`
 - `.agents/skills/project-knowledge/SKILL.md`
-- `.agents/knowledge-core/agent-memory-policy.md`

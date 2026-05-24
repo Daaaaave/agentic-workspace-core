@@ -143,7 +143,7 @@ last_reviewed: YYYY-MM-DD
 
 - Active environment/package/registry points to intended version:
 - Relevant alerts, logs, metrics, user reports, or support tickets reviewed:
-- Release notes, generated docs/indexes, and durable knowledge updated:
+- Release notes, generated indexes, and durable knowledge updated:
 - Cleanup owners for temporary flags/config/compatibility code:
 
 ## Related Knowledge

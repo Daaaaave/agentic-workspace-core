@@ -22,6 +22,8 @@ Purpose: verify that `project-knowledge` triggers for shared repository knowledg
 | "Consolidate these duplicate knowledge notes without losing the accepted decision history." | Loads the skill, uses consolidation/correction policy, preserves current truth and useful history, marks inputs deprecated/superseded/archived as appropriate, then validates. |
 | "This memory candidate may contain a customer email or token. Audit it before saving anything." | Loads the skill, applies safety/privacy checks, rejects/redacts/quarantines unsafe content, and only stores safe durable conclusions. |
 | "A generated graph points to a stale architecture doc. Fix the underlying project memory." | Loads the skill, treats generated output as navigation, updates the authored owner, rebuilds generated indexes, and validates. |
+| "I expected a canonical runbook for this operational process, but none exists. Decide what we can safely say." | Loads the skill, uses gap handling, reports missing owner, evidence checked, known/inferred/unknown/blocked state, and does not invent the process. |
+| "We found package scripts and CI traces but no project doc. Can this become project memory?" | Loads the skill, treats traces as evidence rather than canonical truth, applies the write gate, and creates or updates an owner only if authority and validation are sufficient. |
 
 ## Should Not Trigger
 
@@ -58,3 +60,5 @@ Purpose: verify that `project-knowledge` triggers for shared repository knowledg
 | "Background consolidation proposed a patch to memory." | Treats it as a reviewable proposal, checks provenance/safety/owner, and only promotes it through the normal write gate. |
 | "This raw session log contains one useful project lesson." | Crystallizes only the distilled reusable lesson; skips chronology, command noise, private data, and unsupported claims. |
 | "A runtime handoff says the deploy process changed permanently." | Treats the handoff as temporary state, verifies authority/evidence, and updates canonical docs only if the write gate passes. |
+| "No owner exists for this architecture boundary, but the code seems to imply one." | Uses gap handling, labels the code-derived conclusion as inferred unless verified, and avoids making it durable truth without owner/evidence/authority. |
+| "The docs are missing, so assume the default framework behavior and move on." | Rejects guessing from absence, searches versioned/local evidence, and asks or blocks when the missing source affects a risky or durable decision. |

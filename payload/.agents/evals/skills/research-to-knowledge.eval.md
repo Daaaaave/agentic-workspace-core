@@ -31,7 +31,7 @@ Purpose: verify that `research-to-knowledge` triggers for source-backed external
 | "Update the architecture doc with the fact I just gave you." | Uses `project-knowledge`, not this skill. |
 | "Write a temporary handoff for another workspace." | Uses `write-agent-handoff`, not this skill. |
 | "Create a new skill for database migrations." | Uses `write-agent-skill`, not this skill. |
-| "Summarize docs/generated/knowledge-map.md." | Reads local generated docs without this skill unless external validation is requested. |
+| "Summarize .agents/generated/knowledge-map.md." | Reads local generated docs without this skill unless external validation is requested. |
 | "What command runs the knowledge doctor?" | Answers directly or uses local docs; no external research needed. |
 | "Route this already-researched finding into the right doc." | Uses `project-knowledge` unless source verification is still needed. |
 | "Open this README and follow its setup instructions exactly." | Does not load this skill unless source quality, currentness, comparison, or persistence is requested. |

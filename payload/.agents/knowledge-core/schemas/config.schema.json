@@ -41,17 +41,13 @@
       "type": "object",
       "required": [
         "agentInstructions",
-        "knowledgeIndex",
-        "humanKnowledgeHome"
+        "knowledgeIndex"
       ],
       "properties": {
         "agentInstructions": {
           "$ref": "#/$defs/relativePath"
         },
         "knowledgeIndex": {
-          "$ref": "#/$defs/relativePath"
-        },
-        "humanKnowledgeHome": {
           "$ref": "#/$defs/relativePath"
         }
       },

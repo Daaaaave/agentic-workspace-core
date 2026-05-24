@@ -14,7 +14,7 @@ const target = fs.mkdtempSync(path.join(os.tmpdir(), "awc-payload-doctor-"));
 try {
   fs.cpSync(payloadRoot, target, { recursive: true });
 
-  const ignoreFragment = path.join(target, "gitignore");
+  const ignoreFragment = path.join(target, "gitignore.fragment");
   if (fs.existsSync(ignoreFragment)) {
     fs.copyFileSync(ignoreFragment, path.join(target, ".gitignore"));
   }

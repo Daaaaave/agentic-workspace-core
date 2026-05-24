@@ -25,10 +25,12 @@ const initReplaceEntries = [
 const updateBaseReplaceEntries = [
   ["AGENTS.md", "AGENTS.md"],
   ["CLAUDE.md", "CLAUDE.md"],
-  ["docs/index.md", "docs/index.md"],
-  ["docs/knowledge-system.md", "docs/knowledge-system.md"],
-  [".agents/README.md", ".agents/README.md"],
   [".agents/knowledge-core", ".agents/knowledge-core"]
+];
+
+const obsoleteManagedPaths = [
+  [".agents/README.md", "obsolete agent layer index"],
+  ["docs/generated", "old generated index location"]
 ];
 
 const legacyAgentEntries = [
@@ -281,7 +283,9 @@ function buildPlan(targetRoot, mode, metadata = {}) {
     knowledgeConfig: mode === "update" ? "structured update" : "replace",
     packageJson: fs.existsSync(path.join(targetRoot, "package.json")) ? "update scripts" : "create with scripts",
     gitignore: fs.existsSync(path.join(targetRoot, ".gitignore")) ? "ensure local runtime ignores" : "create",
-    generated: fs.existsSync(path.join(targetRoot, "docs/generated")) ? "reset and rebuild" : "create"
+    generatedRoot: getSourceGeneratedRoot(),
+    generated: fs.existsSync(path.join(targetRoot, getSourceGeneratedRoot())) ? "reset and rebuild" : "create",
+    remove: mode === "update" ? buildObsoleteManagedEntries(targetRoot) : []
   };
 }
 
@@ -391,6 +395,17 @@ function getStarterSkills() {
     .sort();
 }
 
+function getSourceGeneratedRoot() {
+  const sourceConfig = readJson(path.join(payloadRoot, ".agents/knowledge.config.json"));
+  return isSafeRelativePath(sourceConfig.paths?.generatedRoot) ? sourceConfig.paths.generatedRoot : ".agents/generated";
+}
+
+function buildObsoleteManagedEntries(targetRoot) {
+  return obsoleteManagedPaths
+    .map(([target, reason]) => ({ target, reason, existed: fs.existsSync(path.join(targetRoot, target)) }))
+    .filter((entry) => entry.existed);
+}
+
 function printPlan(plan, flags, mode) {
   const verb = flags.dryRun ? "would replace" : "will replace";
   console.log(`Agentic Workspace Core ${mode} target: ${flags.target}`);
@@ -414,14 +429,21 @@ function printPlan(plan, flags, mode) {
       console.log(`- ${entry.target} (${entry.reason})`);
     }
   }
+  if (mode === "update" && plan.remove.length > 0) {
+    console.log("");
+    console.log("Obsolete managed paths will be removed:");
+    for (const entry of plan.remove) {
+      console.log(`- ${entry.target} (${entry.reason})`);
+    }
+  }
   console.log(`- package.json (${plan.packageJson})`);
   console.log(`- .gitignore (${plan.gitignore})`);
   if (!flags.skipCheck) {
     if (mode === "update" && !flags.allowBroken) {
       console.log("- baseline knowledge:check before replacement");
     }
-    if (!plan.replace.some((action) => action.target === "docs/generated")) {
-      console.log(`- docs/generated (${plan.generated})`);
+    if (!plan.replace.some((action) => isPathInside(plan.generatedRoot, action.target))) {
+      console.log(`- ${plan.generatedRoot} (${plan.generated})`);
     }
     console.log("- generated indexes rebuilt and doctor run");
   }
@@ -441,6 +463,7 @@ function applyPlan(plan, flags) {
   ensureDocDirectories(flags.target);
   updatePackageJson(flags.target);
   updateGitignore(flags.target);
+  removeObsoleteManagedPaths(plan, flags.target);
 
   if (!flags.skipCheck) {
     resetGenerated(flags.target);
@@ -450,6 +473,12 @@ function applyPlan(plan, flags) {
 
   if (archiveResult && archiveResult.moved.length > 0) {
     console.log(`Legacy agent context archived to ${archiveResult.relativeRoot}.`);
+  }
+}
+
+function removeObsoleteManagedPaths(plan, targetRoot) {
+  for (const entry of plan.remove || []) {
+    fs.rmSync(path.join(targetRoot, entry.target), { recursive: true, force: true });
   }
 }
 
@@ -610,9 +639,18 @@ function getConfiguredDocDirectories(targetRoot) {
 }
 
 function resetGenerated(targetRoot) {
-  const generated = path.join(targetRoot, "docs/generated");
+  const generated = path.join(targetRoot, getGeneratedRoot(targetRoot));
   fs.rmSync(generated, { recursive: true, force: true });
   fs.mkdirSync(generated, { recursive: true });
+}
+
+function getGeneratedRoot(targetRoot) {
+  const configFile = path.join(targetRoot, ".agents/knowledge.config.json");
+  if (fs.existsSync(configFile)) {
+    const config = readJson(configFile);
+    if (isSafeRelativePath(config.paths?.generatedRoot)) return config.paths.generatedRoot;
+  }
+  return getSourceGeneratedRoot();
 }
 
 function updatePackageJson(targetRoot) {
@@ -640,8 +678,8 @@ function updateGitignore(targetRoot) {
 }
 
 function readGitignoreFragment() {
-  const file = path.join(payloadRoot, "gitignore");
-  if (!fs.existsSync(file)) die("Package payload is missing: gitignore");
+  const file = path.join(payloadRoot, "gitignore.fragment");
+  if (!fs.existsSync(file)) die("Package payload is missing: gitignore.fragment");
   return fs.readFileSync(file, "utf8")
     .split(/\r?\n/)
     .map((line) => line.trim())

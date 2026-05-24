@@ -77,7 +77,7 @@ If any point fails, route the content elsewhere and explain why.
 ## Workflow
 
 1. Resolve the operation: create, update, split, merge, audit, secure, or evaluate.
-2. Inspect local prior art before choosing files: `.agents/knowledge-core/skills.md`, existing `.agents/skills/*/SKILL.md`, existing evals, and nearby repository conventions.
+2. Inspect local prior art before choosing files: `.agents/knowledge-core/skill-contract.md`, existing `.agents/skills/*/SKILL.md`, existing evals, and nearby repository conventions.
 3. Define the skill job in one sentence.
 4. Draft pressure examples first: should trigger, should not trigger, edge cases, neighboring skills, and common prompts that might accidentally trigger the wrong skill.
 5. Decide artifact shape before writing content.
@@ -139,7 +139,7 @@ References should be one level deep and directly named from `SKILL.md`. Scripts 
 - Put trigger-critical language in `description`; the body is loaded only after the skill triggers.
 - Use concrete trigger terms, synonyms, and exclusions when they reduce false positives or false negatives.
 - Do not summarize the full workflow in `description`.
-- Keep frontmatter minimal: `name` and `description` unless `.agents/knowledge-core/skills.md` explicitly allows more.
+- Keep frontmatter minimal: `name` and `description` unless `.agents/knowledge-core/skill-contract.md` explicitly allows more.
 - Add `allowed-tools` only after auditing the skill and any bundled scripts; avoid shell/Bash pre-approval by default.
 - Avoid provider-specific fields in universal skills unless an adapter layer has been explicitly designed.
 - Do not use marketing language, popularity claims, or vague superlatives as routing criteria.
@@ -312,7 +312,7 @@ When creating or changing a skill, return:
 
 ## References
 
-- `.agents/knowledge-core/skills.md`
+- `.agents/knowledge-core/skill-contract.md`
 - `.agents/knowledge-core/templates/skill.md`
 - `.agents/knowledge-core/templates/skill-eval.md`
 - `.agents/knowledge-core/schemas/skill.schema.json`

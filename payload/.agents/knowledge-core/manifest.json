@@ -1,34 +1,29 @@
 {
   "name": "agentic-workspace-core",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "schemaVersion": "0.1.0",
   "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
   "entrypoints": {
     "agentInstructions": "AGENTS.md",
     "claudeInstructions": "CLAUDE.md",
-    "knowledgeIndex": "llms.txt",
-    "humanKnowledgeHome": "docs/index.md",
-    "agentLayerReadme": ".agents/README.md"
+    "knowledgeIndex": "llms.txt"
   },
   "canonicalPaths": {
     "config": ".agents/knowledge.config.json",
     "core": ".agents/knowledge-core",
-    "schema": ".agents/knowledge-core/schema.md",
-    "lifecycle": ".agents/knowledge-core/lifecycle.md",
-    "routing": ".agents/knowledge-core/routing.md",
-    "memoryTaxonomy": ".agents/knowledge-core/memory-taxonomy.md",
-    "agentMemoryPolicy": ".agents/knowledge-core/agent-memory-policy.md",
-    "skillsSpec": ".agents/knowledge-core/skills.md",
+    "documentSchema": ".agents/knowledge-core/document-schema.md",
+    "memoryPolicy": ".agents/knowledge-core/memory-policy.md",
+    "skillContract": ".agents/knowledge-core/skill-contract.md",
     "skills": ".agents/skills",
     "evals": ".agents/evals",
     "docs": "docs",
-    "generatedDocs": "docs/generated",
+    "generatedIndexes": ".agents/generated",
     "handoffs": ".context/handoffs"
   },
   "generatedOutputs": {
     "llmsTxt": "llms.txt",
-    "knowledgeMap": "docs/generated/knowledge-map.md",
-    "knowledgeGraph": "docs/generated/knowledge-graph.json"
+    "knowledgeMap": ".agents/generated/knowledge-map.md",
+    "knowledgeGraph": ".agents/generated/knowledge-graph.json"
   },
   "starterSkills": [
     "project-knowledge",

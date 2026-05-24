@@ -54,11 +54,11 @@ npm run knowledge:check
 - `AGENTS.md`: authoritative instruction entrypoint for coding agents.
 - `CLAUDE.md`: Claude Code proxy that imports `AGENTS.md`.
 - `llms.txt`: generated compact navigation map, not an instruction file.
-- `.agents/knowledge-core/`: schemas, policy, taxonomy, templates, lifecycle, routing, and scripts.
+- `.agents/knowledge-core/`: memory policy, document schema, skill contract, templates, schemas, and scripts.
 - `.agents/skills/`: starter procedural skills for agents.
 - `.agents/evals/skills/`: lightweight skill trigger and boundary checks.
 - `docs/`: durable project knowledge home and starter directories.
-- `docs/generated/`: generated knowledge map and graph.
+- `.agents/generated/`: generated knowledge map and graph.
 - `.context/handoffs/`: ignored runtime handoff location.
 
 ## Legacy Archive
@@ -87,7 +87,7 @@ npm run knowledge:doctor
 npm run knowledge:check
 ```
 
-- `knowledge:build` regenerates `llms.txt` and `docs/generated/*`.
+- `knowledge:build` regenerates `llms.txt` and `.agents/generated/*`.
 - `knowledge:doctor` validates docs, skills, evals, config, and core paths.
 - `knowledge:check` verifies generated files are current and runs the doctor.
 

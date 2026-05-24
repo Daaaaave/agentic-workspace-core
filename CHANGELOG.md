@@ -4,6 +4,14 @@
 
 No unreleased changes.
 
+## 0.1.4 - 2026-05-24
+
+- Consolidated the portable knowledge core around `memory-policy.md`, `document-schema.md`, and `skill-contract.md`.
+- Moved generated knowledge artifacts from `docs/generated/` to `.agents/generated/` and removed redundant public agent/doc indexes.
+- Simplified `AGENTS.md`, knowledge-core documentation, project-knowledge routing, and generated navigation for agent-first usage.
+- Added compact knowledge-gap handling so agents stop or ask instead of inventing missing runbooks, architecture owners, dependency behavior, or operational process.
+- Updated install/update cleanup and smoke coverage for obsolete managed paths from earlier package layouts.
+
 ## 0.1.3 - 2026-05-24
 
 - Simplified install/update commands so `agentic-workspace-core init` and `update` no longer require a package-level `--yes` flag.
