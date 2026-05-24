@@ -12,6 +12,9 @@
 - Added an explicit npm package file whitelist for release-surface review.
 - Restricted the public source surface to package code, installer payload, public docs, and smoke tests; root dogfooding state is now local-only.
 - Added source-only payload doctor harness so packaged runtime doctor behavior stays downstream-specific.
+- Added public npm package metadata, release checks, and packed-package script coverage.
+- Added GitHub Actions CI for knowledge validation, CLI smoke tests, package dry-run inspection, and packed install verification.
+- Added GitHub Actions npm publish workflow using provenance-capable publishing.
 
 ## 0.1.0
 

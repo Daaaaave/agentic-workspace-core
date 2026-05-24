@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify on Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 20.x
+          - 22.x
+          - 24.x
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Validate knowledge core
+        run: npm run knowledge:check
+
+      - name: Run CLI smoke test
+        run: npm run smoke
+
+      - name: Inspect package tarball
+        run: npm pack --dry-run --json
+
+      - name: Test packed install
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          pack_dir="$tmp/pack"
+          target="$tmp/target"
+          mkdir -p "$pack_dir" "$target"
+          npm pack --pack-destination "$pack_dir" --silent
+          cd "$target"
+          npm init -y --silent
+          npm install "$pack_dir"/agentic-workspace-core-*.tgz --silent
+          node node_modules/.bin/agentic-workspace-core version
+          node node_modules/.bin/agentic-workspace-core init --yes --skip-check
+          npm run knowledge:check

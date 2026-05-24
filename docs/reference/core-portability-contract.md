@@ -33,7 +33,8 @@ code_refs:
   - bin/agentic-workspace-core.mjs
 verified_by:
   - npm run knowledge:check
-  - node scripts/smoke-cli.mjs
+  - npm run smoke
+  - npm run release:check
 source_refs:
   - https://code.claude.com/docs/en/memory
   - https://developers.openai.com/codex/guides/agents-md
@@ -46,6 +47,9 @@ source_refs:
   - https://copier.readthedocs.io/en/stable/generating/
   - https://copier.readthedocs.io/en/stable/updating/
   - https://docs.npmjs.com/cli/v11/configuring-npm/package-json
+  - https://docs.npmjs.com/trusted-publishers
+  - https://docs.npmjs.com/generating-provenance-statements
+  - https://docs.github.com/en/actions/tutorials/publish-packages/publish-nodejs-packages
   - https://www.writethedocs.org/guide/docs-as-code/
   - https://diataxis.fr/
   - https://www.12factor.net/config
@@ -90,7 +94,7 @@ The authoritative path inventory is `.agents/knowledge-core/manifest.json`. Do n
 
 The npm package is an installer payload, not a copy of the source repository. Publishable runtime files and structured-update fragments live under `payload/`; source-repository research, generated root indexes, and active development context stay outside that tree.
 
-The npm package MUST include the CLI, `payload/`, and public package docs needed to run `init` and `update`.
+The npm package MUST include the CLI, `payload/`, public package docs, and any source validation scripts referenced by published `package.json` scripts.
 
 `payload/` owns the exact downstream install source tree:
 
@@ -116,6 +120,7 @@ The public source repository SHOULD track only files required to build, inspect,
 
 - package metadata such as `package.json`
 - CLI and test code such as `bin/**` and `scripts/**`
+- release automation such as `.github/workflows/**`
 - `payload/**`
 - public package docs such as `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, and selected `docs/reference/**`
 
@@ -133,7 +138,7 @@ The npm package SHOULD NOT include source-repository working context as root pac
 - the source repo root `AGENTS.md` or root `CLAUDE.md`
 - the source repo root `llms.txt` or generated knowledge maps
 - internal research notes under `docs/research/**`
-- source-repo smoke scripts or development-only test helpers
+- development-only helpers that are not referenced by published package scripts
 - `.context/**`, local handoffs, logs, dumps, screenshots, or scratch files
 
 If an artifact teaches downstream runtime behavior, put it in `payload/`. If it only explains why this source repository changed, keep it in the source repository and outside `package.json` `files`.
@@ -299,7 +304,8 @@ Before declaring an install or update successful:
 
 - `npm run knowledge:build` has run when authored docs, config, or core files changed.
 - `npm run knowledge:check` passes.
-- `node scripts/smoke-cli.mjs` passes in the source repository when installer/updater/package behavior changed.
+- `npm run smoke` passes in the source repository when installer/updater/package behavior changed.
+- `npm run release:check` passes before publish.
 - `npm pack --dry-run` shows only install payload, starter skills/evals, public package docs, and required npm metadata.
 - Generated changes follow authored source changes.
 - No `.context/**`, `.env*`, logs, secrets, or local dumps are committed.

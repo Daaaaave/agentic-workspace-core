@@ -6,7 +6,7 @@ This project is intentionally not an agent framework, runtime, vector database, 
 
 ## What It Provides
 
-Publishable runtime files live under `payload/`. The public repository intentionally tracks only the package source, installer payload, smoke test, and public package docs; local dogfooding files such as root `.agents`, `AGENTS.md`, `llms.txt`, generated root docs, and working research are ignored.
+Publishable runtime files live under `payload/`. The public repository intentionally tracks only package source, installer payload, release validation scripts, CI config, and public package docs; local dogfooding files such as root `.agents`, `AGENTS.md`, `llms.txt`, generated root docs, and working research are ignored.
 
 - `AGENTS.md`: authoritative instruction entrypoint for coding agents.
 - `CLAUDE.md`: Claude Code compatibility proxy that imports `AGENTS.md`.
@@ -34,15 +34,19 @@ Source-repository validation uses `payload/`, but validates it in the installed 
 npm run knowledge:build
 npm run knowledge:doctor
 npm run knowledge:check
+npm run smoke
+npm run release:check
 ```
 
 `knowledge:build` regenerates `payload/llms.txt`, `payload/docs/generated/knowledge-map.md`, and `payload/docs/generated/knowledge-graph.json`.
 
 `knowledge:check` verifies generated files are current and runs the doctor against a temporary install-shaped copy of `payload/`.
 
+`release:check` runs knowledge validation, CLI smoke tests, and a dry-run package inspection before publishing.
+
 ## Install Into Another Repository
 
-Run the initializer from the target repository:
+After the package is published to npm, run the initializer from the target repository:
 
 ```bash
 npm exec -- agentic-workspace-core@latest init
@@ -78,4 +82,4 @@ npm exec -- agentic-workspace-core@latest update
 
 ## Repository Status
 
-This repository is currently pre-public and private while the core contract, adapter contract, and validation layer are being hardened.
+`0.1.x` is a hardening line with replace-first `init` and `update` contracts for controlled installs. Public-safe adoption and provenance-aware merge workflows are planned for `0.2.0`.

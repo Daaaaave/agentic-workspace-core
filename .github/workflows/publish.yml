@@ -1,0 +1,33 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    environment: npm
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          registry-url: https://registry.npmjs.org/
+
+      - name: Run release checks
+        run: npm run release:check
+
+      - name: Publish package with provenance
+        run: npm publish --provenance

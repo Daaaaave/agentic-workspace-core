@@ -1,9 +1,28 @@
 {
   "name": "agentic-workspace-core",
   "version": "0.1.0",
-  "private": true,
   "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
+  "license": "MIT",
+  "author": "Dmitry Salatov",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Daaaaave/agentic-workspace-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Daaaaave/agentic-workspace-core/issues"
+  },
+  "homepage": "https://github.com/Daaaaave/agentic-workspace-core#readme",
+  "keywords": [
+    "agents",
+    "ai",
+    "coding-agents",
+    "llms",
+    "knowledge-management",
+    "memory",
+    "skills",
+    "workspace"
+  ],
   "bin": {
     "agentic-workspace-core": "bin/agentic-workspace-core.mjs"
   },
@@ -14,6 +33,7 @@
     "LICENSE",
     "payload/",
     "README.md",
+    "scripts/",
     "SECURITY.md",
     "docs/reference/core-portability-contract.md"
   ],
@@ -21,9 +41,16 @@
     "knowledge:build": "cd payload && node .agents/knowledge-core/scripts/build-index.mjs",
     "knowledge:doctor": "node scripts/doctor-payload.mjs",
     "knowledge:check": "cd payload && node .agents/knowledge-core/scripts/build-index.mjs --check && cd .. && node scripts/doctor-payload.mjs",
-    "smoke": "node scripts/smoke-cli.mjs"
+    "smoke": "node scripts/smoke-cli.mjs",
+    "release:check": "npm run knowledge:check && npm run smoke && npm pack --dry-run --json",
+    "prepublishOnly": "npm run release:check"
   },
   "engines": {
     "node": ">=20"
+  },
+  "packageManager": "npm@11.12.1",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
