@@ -29,5 +29,5 @@ jobs:
       - name: Run release checks
         run: npm run release:check
 
-      - name: Publish package with provenance
-        run: npm publish --provenance
+      - name: Publish package
+        run: npm publish --access public
