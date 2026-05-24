@@ -4,6 +4,11 @@
 
 No unreleased changes.
 
+## 0.1.5 - 2026-05-24
+
+- Changed `--skip-check` so install/update still rebuild generated indexes and only skips validation checks.
+- Added smoke coverage proving `update --skip-check` refreshes stale `llms.txt` and `.agents/generated/*` for local authored docs.
+
 ## 0.1.4 - 2026-05-24
 
 - Consolidated the portable knowledge core around `memory-policy.md`, `document-schema.md`, and `skill-contract.md`.

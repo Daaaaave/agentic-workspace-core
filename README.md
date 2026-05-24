@@ -1,23 +1,30 @@
 # Agentic Workspace Core
 
-A portable workspace layer for coding agents.
+[![npm version](https://img.shields.io/npm/v/agentic-workspace-core.svg)](https://www.npmjs.com/package/agentic-workspace-core)
+[![CI](https://github.com/Daaaaave/agentic-workspace-core/actions/workflows/ci.yml/badge.svg)](https://github.com/Daaaaave/agentic-workspace-core/actions/workflows/ci.yml)
 
-Agentic Workspace Core gives a software repository a shared agent instruction file, a small durable knowledge system, starter skills, handoff conventions, generated indexes, and validation scripts. It is meant for projects where humans and agents need to work from the same reviewable source of truth.
+Agentic Workspace Core is a portable workspace layer for coding agents.
 
-It is not an agent runtime, framework, vector database, or mandatory Obsidian vault. It is a repository-native base you install into a project and keep in version control.
+It gives a repository one shared agent entrypoint, a small durable knowledge system, starter skills, generated indexes, handoff conventions, and validation scripts. The goal is simple: agents should work from inspectable files in the repo instead of hidden chat memory, stale prompts, or tool-specific rule sprawl.
 
-## Why Use It
+It is not an agent runtime, framework, vector database, or required Obsidian vault. It is a repository-native base you install into projects and keep in version control.
 
-- Give coding agents one authoritative entrypoint: `AGENTS.md`.
-- Keep durable project knowledge in `docs/` instead of chat history.
-- Separate project facts from reusable agent procedures in `.agents/skills/`.
-- Give agents a default development workflow for scope, context, implementation, debugging, security, and done checks.
-- Keep temporary handoffs in ignored `.context/handoffs/`.
-- Validate the knowledge layer with local scripts before trusting it.
+## Why This Exists
 
-## Install In Your Project
+Agent work gets messy when every tool has its own instructions, project knowledge lives in chat history, generated context becomes trusted as truth, and future agents rediscover the same decisions or mistakes.
 
-Run from the root of the project where agents will work:
+This package installs a clean structure for:
+
+- `AGENTS.md` as the authoritative instruction entrypoint.
+- `docs/` as durable project knowledge.
+- `.agents/skills/` as reusable agent procedures.
+- `llms.txt` and `.agents/generated/*` as generated navigation, not policy.
+- `.context/handoffs/` as ignored temporary transfer state.
+- local scripts that rebuild and validate the knowledge layer.
+
+## Quick Start
+
+Run from the root of the repository where agents will work:
 
 ```bash
 npx agentic-workspace-core@latest init --dry-run
@@ -25,9 +32,11 @@ npx agentic-workspace-core@latest init
 npm run knowledge:check
 ```
 
-`init` itself does not require a confirmation flag. If npm asks to download the temporary package, confirm the npm prompt once.
+`init` does not require a package-level confirmation flag. If npm asks to download the package for `npx`, confirm npm's prompt once.
 
-`init` is intentionally replace-first in `0.1.x`. Review the dry run before applying it when installing into an existing repository.
+## Important: `0.1.x` Install Mode
+
+`0.1.x` is intentionally replace-first. It is best for controlled projects where you want a clean Agentic Workspace Core layer.
 
 Managed paths that may be replaced:
 
@@ -37,9 +46,11 @@ Managed paths that may be replaced:
 - `docs/`
 - `llms.txt`
 
-Before replacement, `init` moves existing agent-facing files, old project docs, generated LLM indexes, and agent tool rules/config into root `legacy/`. The installer also updates `package.json` scripts and ensures `.context/`, `CLAUDE.local.md`, and `legacy/` are ignored. It does not replace unrelated source code or product files.
+Before replacement, `init` moves existing agent-facing context into root `legacy/` with original relative paths preserved. That includes old instruction files, existing `.agents/`, existing `docs/`, old `llms*.txt` indexes, common AI-tool rule/config directories, and MCP config files. `legacy/` is ignored by git and is not treated as active project knowledge.
 
-## Update An Installed Project
+Use the dry run first on existing repositories.
+
+## Update
 
 ```bash
 npx agentic-workspace-core@latest update --dry-run
@@ -47,31 +58,47 @@ npx agentic-workspace-core@latest update
 npm run knowledge:check
 ```
 
-`update` requires an existing Agentic Workspace Core install. It runs a baseline `knowledge:check`, replaces core-managed files and starter skills, preserves project-specific skill directories/evals, preserves safe local config extensions, and rebuilds generated indexes.
+`update` requires an existing install. It:
+
+- runs a baseline `knowledge:check` unless skipped
+- replaces core-managed files and upstream starter skills
+- preserves project-specific skill directories and evals
+- preserves safe local config extensions
+- removes obsolete managed paths from older package layouts
+- always rebuilds generated indexes
+
+`--skip-check` still rebuilds `llms.txt` and `.agents/generated/*`; it only skips validation checks.
 
 ## What Gets Installed
 
-- `AGENTS.md`: authoritative instruction entrypoint for coding agents.
-- `CLAUDE.md`: Claude Code proxy that imports `AGENTS.md`.
-- `llms.txt`: generated compact navigation map, not an instruction file.
-- `.agents/knowledge-core/`: memory policy, document schema, skill contract, templates, schemas, and scripts.
-- `.agents/skills/`: starter procedural skills for agents.
-- `.agents/evals/skills/`: lightweight skill trigger and boundary checks.
-- `docs/`: durable project knowledge home and starter directories.
-- `.agents/generated/`: generated knowledge map and graph.
-- `.context/handoffs/`: ignored runtime handoff location.
-
-## Legacy Archive
-
-On `init`, existing agent-facing context is moved into root `legacy/` before the clean core is installed. Paths keep their original relative location under `legacy/` with no package or timestamp wrapper.
-
-This includes old `AGENTS.md`/`CLAUDE.md`/`GEMINI.md`/`CODEX.md` style files, existing `.agents/`, existing `docs/`, old `llms*.txt` indexes, generic `AI.md`/`MEMORY.md` style files, and common tool-specific rule/config surfaces such as `.claude/`, `.codex/`, `.cursor/`, `.cursorignore`, `.windsurf/`, `.codeiumignore`, `.github/instructions/`, `.github/copilot-instructions.md`, `.vscode/instructions/`, `.vscode/mcp.json`, `.continue/`, `.clinerules*`, `.roo/`, `.roomodes`, `.roorules*`, `.aider*`, `.augment/`, `.devin/`, `.opencode/`, `.goose/`, `.openhands/`, `.jules/`, `.kiro/`, `.kilocode/`, `.factory/`, `.amp/`, `.warp/`, `.qwen/`, `.junie/`, `.aiassistant/`, and MCP config files.
-
-`legacy/` is preserved for manual review, but ignored by git and not treated as active project knowledge. Promote only verified, current material back into `docs/` or project-specific `.agents/skills/`.
+```text
+AGENTS.md
+CLAUDE.md
+llms.txt
+.agents/
+  knowledge.config.json
+  generated/
+  knowledge-core/
+  skills/
+  evals/skills/
+docs/
+  architecture/
+  components/
+  decisions/
+  domain/
+  glossary/
+  plans/
+  reference/
+  research/
+  runbooks/
+  workflows/
+.context/handoffs/   # ignored
+legacy/              # ignored, created only when old agent context is archived
+```
 
 ## Starter Skills
 
-- `project-knowledge`: recall, route, write, maintain, and validate durable repository knowledge.
+- `project-knowledge`: recall, route, write, correct, and validate durable repository knowledge.
 - `research-to-knowledge`: source-backed research and research persistence.
 - `software-development-workflow`: non-trivial coding work from task contract through verified completion.
 - `write-agent-skill`: skill creation, revision, security review, and evals.
@@ -79,7 +106,7 @@ This includes old `AGENTS.md`/`CLAUDE.md`/`GEMINI.md`/`CODEX.md` style files, ex
 
 ## Project Commands
 
-Installed projects get these npm scripts:
+Installed projects get:
 
 ```bash
 npm run knowledge:build
@@ -102,7 +129,7 @@ npm run knowledge:check
 
 ## Package Maintainers
 
-This source repository keeps the publishable runtime payload under `payload/`. Source validation runs against that payload in the installed-project shape.
+The publishable runtime payload lives under `payload/`. Source validation runs against that payload in the installed-project shape.
 
 ```bash
 npm run knowledge:check
@@ -110,8 +137,8 @@ npm run smoke
 npm run release:check
 ```
 
-`release:check` runs knowledge validation, CLI smoke tests, and a dry-run package inspection before publishing.
+`release:check` runs knowledge validation, CLI smoke tests, and a dry-run package inspection before publishing. Releases are published to npm through GitHub Releases and the `Publish` workflow.
 
 ## Status
 
-`0.1.x` is a hardening line with replace-first `init` and `update` contracts for controlled installs. Safer adoption and provenance-aware merge workflows are planned for `0.2.0`.
+`0.1.x` is a hardening line with replace-first `init` and `update` contracts. Safer adoption and provenance-aware merge workflows are planned for `0.2.0`.

@@ -26,6 +26,11 @@ try {
   runCli(["update", "--target", target]);
   verifyInstalledCore(target);
   verifyLocalOverrides(target);
+  addLocalKnowledgeAndStaleIndexes(target);
+  runCli(["update", "--target", target, "--skip-check"]);
+  verifyInstalledCore(target);
+  verifyLocalOverrides(target);
+  verifyLocalKnowledgeIndexed(target);
   console.log(`CLI smoke passed: ${target}`);
 } catch (error) {
   console.error(error.message);
@@ -148,6 +153,27 @@ Project-local skill kept across core updates.
 
   writeText(path.join(root, ".agents/README.md"), "# Stale managed README\n");
   fs.mkdirSync(path.join(root, "docs/generated"), { recursive: true });
+}
+
+function addLocalKnowledgeAndStaleIndexes(root) {
+  writeText(path.join(root, "docs/custom/local-release.md"), `---
+id: runbook.local-release
+type: runbook
+status: current
+owner: smoke
+summary: Local release procedure used to verify generated index rebuilds.
+canonical_for:
+  - local-release
+last_reviewed: 2026-05-24
+---
+
+# Local Release
+
+Smoke-only local knowledge document.
+`);
+  writeText(path.join(root, "llms.txt"), "stale llms index\n");
+  writeText(path.join(root, ".agents/generated/knowledge-map.md"), "stale knowledge map\n");
+  writeText(path.join(root, ".agents/generated/knowledge-graph.json"), "{\"stale\":true}\n");
 }
 
 function addLegacyInputs(root) {
@@ -319,6 +345,23 @@ function verifyLocalOverrides(root) {
     [fs.existsSync(path.join(root, ".agents/evals/skills/local-reviewer.eval.md")), "custom skill eval was not preserved"],
     [!fs.existsSync(path.join(root, ".agents/README.md")), "obsolete .agents/README.md was not removed"],
     [!fs.existsSync(path.join(root, "docs/generated")), "obsolete docs/generated was not removed"]
+  ];
+
+  const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);
+  if (failed.length > 0) throw new Error(failed.join("\n"));
+}
+
+function verifyLocalKnowledgeIndexed(root) {
+  const llms = fs.readFileSync(path.join(root, "llms.txt"), "utf8");
+  const map = fs.readFileSync(path.join(root, ".agents/generated/knowledge-map.md"), "utf8");
+  const graph = readJson(path.join(root, ".agents/generated/knowledge-graph.json"));
+  const graphNode = graph.nodes?.find((node) => node.id === "runbook.local-release");
+
+  const checks = [
+    [llms.includes("runbook.local-release"), "--skip-check update did not rebuild llms.txt"],
+    [map.includes("runbook.local-release"), "--skip-check update did not rebuild knowledge map"],
+    [Boolean(graphNode), "--skip-check update did not rebuild knowledge graph"],
+    [graphNode?.path === "docs/custom/local-release.md", "knowledge graph node path is wrong"]
   ];
 
   const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);
