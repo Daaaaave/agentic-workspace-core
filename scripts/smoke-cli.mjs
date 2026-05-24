@@ -15,12 +15,14 @@ const skipCheckTarget = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-skip-ch
 
 try {
   assertPayloadComplete();
-  runCli(["init", "--target", skipCheckTarget, "--yes", "--skip-check"]);
+  runCli(["init", "--target", skipCheckTarget, "--skip-check"]);
   verifyInstalledCore(skipCheckTarget);
-  runCli(["init", "--target", target, "--yes"]);
+  addLegacyInputs(target);
+  runCli(["init", "--target", target]);
   verifyInstalledCore(target);
+  verifyLegacyArchive(target);
   addLocalOverrides(target);
-  runCli(["update", "--target", target, "--yes"]);
+  runCli(["update", "--target", target]);
   verifyInstalledCore(target);
   verifyLocalOverrides(target);
   console.log(`CLI smoke passed: ${target}`);
@@ -142,6 +144,44 @@ Project-local skill kept across core updates.
 `);
 }
 
+function addLegacyInputs(root) {
+  writeText(path.join(root, "AGENTS.md"), "# Old Agent Instructions\n\nlegacy root instructions\n");
+  writeText(path.join(root, "CLAUDE.md"), "# Old Claude Instructions\n\nlegacy claude instructions\n");
+  writeText(path.join(root, "GEMINI.md"), "# Old Gemini Instructions\n\nlegacy gemini instructions\n");
+  writeText(path.join(root, "CODEX.md"), "# Old Codex Instructions\n\nlegacy codex instructions\n");
+  writeText(path.join(root, "CONVENTIONS.md"), "# Old Aider Conventions\n\nlegacy aider conventions\n");
+  writeText(path.join(root, "MEMORY.md"), "# Old Agent Memory\n\nlegacy memory\n");
+  writeText(path.join(root, "backend.instructions.md"), "legacy root instruction file\n");
+  writeText(path.join(root, "llms-dev.txt"), "legacy llms dev index\n");
+  writeText(path.join(root, "llms-full.txt"), "legacy llms full index\n");
+  writeText(path.join(root, ".mcp.json"), "{ \"mcpServers\": {} }\n");
+  writeText(path.join(root, "docs/old-architecture.md"), "# Old Architecture\n\nlegacy docs\n");
+  writeText(path.join(root, ".agents/skills/old-skill/SKILL.md"), "# Old Skill\n");
+  writeText(path.join(root, ".codex/config.toml"), "[project]\n");
+  writeText(path.join(root, ".cursor/rules/old.mdc"), "legacy cursor rule\n");
+  writeText(path.join(root, ".cursorignore"), "dist\n");
+  writeText(path.join(root, ".github/copilot-instructions.md"), "legacy copilot instructions\n");
+  writeText(path.join(root, ".github/instructions/general.instructions.md"), "---\napplyTo: '**'\n---\nlegacy instruction\n");
+  writeText(path.join(root, ".github/workflows/ci.yml"), "name: ci\n");
+  writeText(path.join(root, ".vscode/mcp.json"), "{ \"servers\": {} }\n");
+  writeText(path.join(root, ".windsurf/rules/old.md"), "---\ntrigger: always_on\n---\nlegacy windsurf rule\n");
+  writeText(path.join(root, ".codeiumignore"), "tmp\n");
+  writeText(path.join(root, ".clinerules/old.md"), "legacy cline rule\n");
+  writeText(path.join(root, ".clinerules-debug"), "legacy cline debug rule\n");
+  writeText(path.join(root, ".roo/rules-code/old.md"), "legacy roo rule\n");
+  writeText(path.join(root, ".roorules-debug"), "legacy roo debug rule\n");
+  writeText(path.join(root, ".continue/rules/old.md"), "legacy continue rule\n");
+  writeText(path.join(root, ".aider.conf.yml"), "read: [CONVENTIONS.md]\n");
+  writeText(path.join(root, ".aider.tags.cache.v3"), "legacy aider tags\n");
+  writeText(path.join(root, ".augment/rules/old.md"), "legacy augment rule\n");
+  writeText(path.join(root, ".devin/config.json"), "{}\n");
+  writeText(path.join(root, ".devin.yml"), "setup: []\n");
+  writeText(path.join(root, ".opencode/agent/reviewer.md"), "legacy opencode agent\n");
+  writeText(path.join(root, ".kiro/steering/product.md"), "legacy kiro steering\n");
+  writeText(path.join(root, ".junie/guidelines.md"), "legacy junie guideline\n");
+  writeText(path.join(root, ".qwen/rules/old.md"), "legacy qwen rule\n");
+}
+
 function verifyInstalledCore(root) {
   const required = [
     "AGENTS.md",
@@ -174,8 +214,88 @@ function verifyInstalledCore(root) {
   }
 
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf8");
-  if (!gitignore.includes(".context/") || !gitignore.includes("CLAUDE.local.md")) {
+  if (!gitignore.includes(".context/") || !gitignore.includes("CLAUDE.local.md") || !gitignore.includes("legacy/")) {
     throw new Error("Installed .gitignore is missing required local runtime ignores");
+  }
+}
+
+function verifyLegacyArchive(root) {
+  const archived = [
+    "legacy/AGENTS.md",
+    "legacy/CLAUDE.md",
+    "legacy/GEMINI.md",
+    "legacy/CODEX.md",
+    "legacy/CONVENTIONS.md",
+    "legacy/MEMORY.md",
+    "legacy/backend.instructions.md",
+    "legacy/llms-dev.txt",
+    "legacy/llms-full.txt",
+    "legacy/.mcp.json",
+    "legacy/docs/old-architecture.md",
+    "legacy/.agents/skills/old-skill/SKILL.md",
+    "legacy/.codex/config.toml",
+    "legacy/.cursor/rules/old.mdc",
+    "legacy/.cursorignore",
+    "legacy/.github/copilot-instructions.md",
+    "legacy/.github/instructions/general.instructions.md",
+    "legacy/.vscode/mcp.json",
+    "legacy/.windsurf/rules/old.md",
+    "legacy/.codeiumignore",
+    "legacy/.clinerules/old.md",
+    "legacy/.clinerules-debug",
+    "legacy/.roo/rules-code/old.md",
+    "legacy/.roorules-debug",
+    "legacy/.continue/rules/old.md",
+    "legacy/.aider.conf.yml",
+    "legacy/.aider.tags.cache.v3",
+    "legacy/.augment/rules/old.md",
+    "legacy/.devin/config.json",
+    "legacy/.devin.yml",
+    "legacy/.opencode/agent/reviewer.md",
+    "legacy/.kiro/steering/product.md",
+    "legacy/.junie/guidelines.md",
+    "legacy/.qwen/rules/old.md",
+    "legacy/MANIFEST.md"
+  ];
+  const missing = archived.filter((file) => !fs.existsSync(path.join(root, file)));
+  if (missing.length > 0) throw new Error(`Legacy archive is incomplete:\n${missing.join("\n")}`);
+
+  const removedFromActiveSurface = [
+    "GEMINI.md",
+    "CODEX.md",
+    "CONVENTIONS.md",
+    "MEMORY.md",
+    "backend.instructions.md",
+    "llms-dev.txt",
+    "llms-full.txt",
+    ".mcp.json",
+    "docs/old-architecture.md",
+    ".codex/config.toml",
+    ".cursor/rules/old.mdc",
+    ".cursorignore",
+    ".github/copilot-instructions.md",
+    ".github/instructions/general.instructions.md",
+    ".vscode/mcp.json",
+    ".windsurf/rules/old.md",
+    ".codeiumignore",
+    ".clinerules/old.md",
+    ".clinerules-debug",
+    ".roo/rules-code/old.md",
+    ".roorules-debug",
+    ".continue/rules/old.md",
+    ".aider.conf.yml",
+    ".aider.tags.cache.v3"
+  ];
+  const stillActive = removedFromActiveSurface.filter((file) => fs.existsSync(path.join(root, file)));
+  if (stillActive.length > 0) throw new Error(`Legacy files are still active:\n${stillActive.join("\n")}`);
+
+  if (!fs.existsSync(path.join(root, ".github/workflows/ci.yml"))) {
+    throw new Error("Unrelated GitHub workflow should not be moved to legacy");
+  }
+
+  const activeAgents = fs.readFileSync(path.join(root, "AGENTS.md"), "utf8");
+  if (activeAgents.includes("legacy root instructions")) {
+    throw new Error("Legacy AGENTS.md content leaked into active AGENTS.md");
   }
 }
 
@@ -199,6 +319,12 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
+function writeText(file, value) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, value);
+}
+
 function writeJson(file, value) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }

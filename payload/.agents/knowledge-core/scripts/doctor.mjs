@@ -256,7 +256,7 @@ function validateInstructionProxies(manifest) {
 }
 
 function validateLocalIgnorePolicy(manifest) {
-  const requiredIgnores = [".context/"];
+  const requiredIgnores = [".context/", "legacy/"];
   if (manifest.entrypoints?.claudeInstructions) requiredIgnores.push("CLAUDE.local.md");
 
   const gitignore = ".gitignore";
@@ -271,6 +271,9 @@ function validateLocalIgnorePolicy(manifest) {
 
   if (!lines.includes(".context/") && !lines.includes(".context/**")) {
     warn(gitignore, "missing .context/ ignore rule");
+  }
+  if (!lines.includes("legacy/") && !lines.includes("legacy/**")) {
+    warn(gitignore, "missing legacy/ ignore rule");
   }
   if (manifest.entrypoints?.claudeInstructions && !lines.includes("CLAUDE.local.md")) {
     warn(gitignore, "missing CLAUDE.local.md ignore rule");

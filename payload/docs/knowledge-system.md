@@ -35,6 +35,7 @@ This repository uses Agentic Workspace Core as a repository-native knowledge and
 - `.agents/skills/` owns reusable agent procedures.
 - `.agents/evals/skills/` owns lightweight skill trigger checks.
 - `.context/handoffs/` owns temporary transfer state only.
+- `legacy/` owns archived pre-install material only. It is not active project knowledge.
 - `llms.txt` and `docs/generated/*` are generated retrieval aids.
 
 ## Authoring Rules
@@ -47,6 +48,7 @@ This repository uses Agentic Workspace Core as a repository-native knowledge and
 - Mark uncertain or incomplete knowledge as `draft`.
 - Preserve useful history through `deprecated`, `superseded`, or `archived` instead of deleting context.
 - Use `project` frontmatter only for repository-local metadata outside the portable core.
+- Do not read or trust `legacy/` unless the task explicitly asks to migrate or audit archived material.
 
 ## Skill Rules
 

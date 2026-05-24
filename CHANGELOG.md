@@ -4,6 +4,13 @@
 
 No unreleased changes.
 
+## 0.1.3 - 2026-05-24
+
+- Simplified install/update commands so `agentic-workspace-core init` and `update` no longer require a package-level `--yes` flag.
+- Added root `legacy/` archiving during `init` for existing docs, managed core paths, generated LLM indexes, and common agent/tool instruction or rules files before installing the clean core layer, preserving original relative paths without timestamp/package wrapper directories.
+- Added `legacy/` to installed ignore rules and knowledge ignore paths so archived material is preserved but not treated as active project knowledge.
+- Expanded CLI smoke coverage for legacy archiving and active-surface cleanup.
+
 ## 0.1.2 - 2026-05-24
 
 - Reworked the README around public project onboarding, install/update safety, and package maintainer workflow.

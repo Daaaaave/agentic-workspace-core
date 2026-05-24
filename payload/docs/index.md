@@ -35,6 +35,7 @@ This is the human-readable home for durable knowledge about this repository.
 ## What Does Not Belong Here
 
 - Temporary task state; use `.context/handoffs/`.
+- Archived pre-install material; keep it in `legacy/` until explicitly migrated.
 - Procedural agent behavior; use `.agents/skills/`.
 - Generated indexes; rebuild them from authored docs.
 - Personal/private notes, credentials, raw chat logs, screenshots, and local dumps.

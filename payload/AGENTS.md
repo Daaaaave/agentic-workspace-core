@@ -18,8 +18,10 @@ This repository uses Agentic Workspace Core.
 - Agent skills belong in `.agents/skills/` and must stay procedural.
 - Skill evals belong in `.agents/evals/skills/`.
 - Runtime handoffs belong in `.context/handoffs/`.
+- Legacy pre-install material belongs in `legacy/` and is inactive archive material, not project knowledge.
 - Generated files must be rebuilt, not edited as canonical sources.
 - Do not scan `.context/` as project knowledge unless the task explicitly involves handoffs or runtime artifacts.
+- Do not scan `legacy/` as project knowledge unless the task explicitly asks to migrate or audit archived pre-install material.
 - Candidate memories must pass `.agents/knowledge-core/agent-memory-policy.md` before becoming durable.
 
 ## Working Protocol

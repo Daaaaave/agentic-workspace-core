@@ -3,7 +3,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import readline from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
@@ -15,7 +14,15 @@ const packageManifest = readJson(path.join(payloadRoot, ".agents/knowledge-core/
 const command = process.argv[2] || "help";
 const args = process.argv.slice(3);
 
-const baseReplaceEntries = [
+const initReplaceEntries = [
+  ["AGENTS.md", "AGENTS.md"],
+  ["CLAUDE.md", "CLAUDE.md"],
+  [".agents", ".agents"],
+  ["docs", "docs"],
+  ["llms.txt", "llms.txt"],
+];
+
+const updateBaseReplaceEntries = [
   ["AGENTS.md", "AGENTS.md"],
   ["CLAUDE.md", "CLAUDE.md"],
   ["docs/index.md", "docs/index.md"],
@@ -24,12 +31,121 @@ const baseReplaceEntries = [
   [".agents/knowledge-core", ".agents/knowledge-core"]
 ];
 
-const initOnlyReplaceEntries = [
-  [".agents/knowledge.config.json", ".agents/knowledge.config.json"],
-  [".agents/skills", ".agents/skills"],
-  [".agents/evals", ".agents/evals"],
-  ["llms.txt", "llms.txt"],
-  ["docs/generated", "docs/generated"]
+const legacyAgentEntries = [
+  ["AGENT.md", "singular AGENTS.md compatibility file"],
+  ["agents.md", "lowercase AGENTS.md variant"],
+  ["Agents.md", "mixed-case AGENTS.md variant"],
+  ["AGENTS.local.md", "local AGENTS.md override"],
+  ["AGENTS.override.md", "AGENTS.md override file"],
+  ["CODEX.md", "legacy Codex/OpenCode instruction file"],
+  [".codex", "Codex project config/instructions/skills"],
+  ["INSTRUCTIONS.md", "generic agent instruction file"],
+  ["CLAUDE.local.md", "Claude local project instructions"],
+  [".claude", "Claude Code project commands/settings/agents"],
+  ["GEMINI.md", "Gemini CLI context file"],
+  [".gemini", "Gemini CLI project settings/commands"],
+  [".geminiignore", "Gemini CLI context ignore file"],
+  [".rules", "Zed project rules"],
+  [".zed", "Zed project AI settings/rules"],
+  [".cursorrules", "legacy Cursor rules"],
+  [".cursorignore", "Cursor context ignore file"],
+  ["CURSOR.md", "Cursor instruction file"],
+  [".cursor", "Cursor project rules/settings/MCP config"],
+  [".github/copilot-instructions.md", "GitHub Copilot repository instructions"],
+  [".github/instructions", "GitHub Copilot path-specific instructions"],
+  [".github/prompts", "GitHub Copilot prompt files"],
+  [".vscode/copilot-instructions.md", "VS Code Copilot workspace instructions"],
+  [".vscode/instructions", "VS Code instruction files"],
+  [".vscode/mcp.json", "VS Code MCP server config"],
+  [".vscode/prompts", "VS Code prompt files"],
+  [".windsurfrules", "legacy Windsurf rules"],
+  [".codeiumignore", "Codeium/Windsurf context ignore file"],
+  ["WINDSURF.md", "Windsurf instruction file"],
+  [".windsurf", "Windsurf workspace rules/workflows"],
+  [".clinerules", "Cline workspace rules"],
+  [".clinerules.md", "Cline workspace rules file"],
+  ["CLINE.md", "Cline instruction file"],
+  [".cline", "Cline project settings/rules"],
+  [".continue", "Continue local rules/config"],
+  [".roo", "Roo Code rules/modes/MCP config"],
+  [".roomodes", "Roo Code project mode config"],
+  [".roorules", "legacy Roo Code rules file"],
+  [".roorules-code", "legacy Roo Code code-mode rules file"],
+  [".roorules-architect", "legacy Roo Code architect-mode rules file"],
+  ["ROO.md", "Roo Code instruction file"],
+  ["CONVENTIONS.md", "Aider conventions file"],
+  [".aider", "Aider project state/config"],
+  [".aider.conf.yml", "Aider project config"],
+  [".aider.conf.yaml", "Aider project config"],
+  [".aiderignore", "Aider context ignore file"],
+  [".aider.model.settings.yml", "Aider model settings"],
+  [".aider.model.metadata.json", "Aider model metadata"],
+  [".aider.chat.history.md", "Aider chat history"],
+  [".aider.input.history", "Aider input history"],
+  [".aider.tags.cache.v3", "Aider tags cache"],
+  [".augment", "Augment rules/config"],
+  [".augment-guidelines", "legacy Augment guidelines"],
+  [".augment-guidelines.md", "legacy Augment guidelines"],
+  [".devin", "Devin project config/instructions"],
+  [".devin.yml", "Devin project config"],
+  [".devin.yaml", "Devin project config"],
+  ["DEVIN.md", "Devin instruction file"],
+  ["devin.yml", "Devin project config"],
+  ["devin.yaml", "Devin project config"],
+  ["REVIEW.md", "Devin Review instruction file"],
+  [".opencode", "OpenCode project agents/commands/config"],
+  ["opencode.json", "OpenCode project config"],
+  ["opencode.jsonc", "OpenCode project config"],
+  ["OPENCODE.md", "OpenCode instruction file"],
+  [".goose", "Goose project config"],
+  ["GOOSE.md", "Goose instruction file"],
+  [".openhands", "OpenHands project config"],
+  ["openhands.yaml", "OpenHands project config"],
+  ["openhands.yml", "OpenHands project config"],
+  [".openhands_instructions", "OpenHands instruction file"],
+  [".jules", "Jules project config"],
+  ["JULES.md", "Jules instruction file"],
+  [".kiro", "Kiro specs/steering/hooks"],
+  ["KIRO.md", "Kiro instruction file"],
+  [".kilocode", "Kilo Code project rules/config"],
+  [".kilocodemodes", "Kilo Code project modes"],
+  ["KILOCODE.md", "Kilo Code instruction file"],
+  [".factory", "Factory project config"],
+  ["FACTORY.md", "Factory instruction file"],
+  [".amp", "Amp project config"],
+  ["AMP.md", "Amp instruction file"],
+  [".warp", "Warp project config"],
+  ["WARP.md", "Warp instruction file"],
+  [".qwen", "Qwen project config"],
+  ["QWEN.md", "Qwen instruction file"],
+  [".mcp.json", "project MCP server config"],
+  ["mcp.json", "project MCP server config"],
+  ["llm.txt", "legacy LLM context index"],
+  ["LLM.txt", "legacy LLM context index"],
+  ["llms.md", "legacy LLM context index"],
+  ["llms-full.txt", "legacy LLM context index"],
+  ["llms-small.txt", "legacy LLM context index"],
+  ["MEMORY.md", "generic agent memory file"],
+  ["memory.md", "generic agent memory file"],
+  [".memory", "generic agent memory directory/file"],
+  ["AI.md", "generic AI instruction file"],
+  ["AI_CONTEXT.md", "generic AI context file"],
+  ["LLM.md", "generic LLM instruction file"],
+  ["LLMS.md", "generic LLM instruction file"],
+  ["PROJECT_CONTEXT.md", "generic project context file"],
+  ["PROMPT.md", "generic prompt instruction file"],
+  [".aiassistant", "JetBrains AI Assistant project rules"],
+  [".aiassistant/rules", "JetBrains AI Assistant project rules"],
+  [".junie", "JetBrains Junie project guidelines/config"],
+  [".junie/guidelines.md", "JetBrains Junie guidelines"],
+  [".junie/instructions.md", "JetBrains Junie instructions"]
+];
+
+const legacyAgentEntryPatterns = [
+  [/^\.clinerules-.+$/, "Cline mode-specific workspace rules file"],
+  [/^\.roorules-.+$/, "Roo Code mode-specific rules file"],
+  [/^llms-.+\.txt$/i, "legacy LLM context index"],
+  [/^.+\.instructions\.md$/i, "workspace instruction file"]
 ];
 
 function parseFlags(values) {
@@ -118,8 +234,6 @@ async function init(flags) {
 
   if (flags.dryRun) return;
 
-  await confirmIfNeeded(plan, flags, "init");
-
   applyPlan(plan, flags);
 
   console.log("Agentic Workspace Core initialized.");
@@ -145,7 +259,6 @@ async function update(flags) {
     runNpmScript(flags.target, "knowledge:check", "Baseline knowledge check failed. Fix it first or rerun with --allow-broken.");
   }
 
-  await confirmIfNeeded(plan, flags, "update");
   applyPlan(plan, flags);
 
   console.log(`Agentic Workspace Core updated: ${installedManifest.version} -> ${packageManifest.version}.`);
@@ -157,11 +270,14 @@ function buildPlan(targetRoot, mode, metadata = {}) {
     target,
     existed: fs.existsSync(path.join(targetRoot, target))
   }));
+  const archive = mode === "init" ? buildLegacyArchiveEntries(targetRoot, replace) : [];
 
   return {
     mode,
     ...metadata,
     replace,
+    archive,
+    archiveRoot: archive.length > 0 ? legacyArchiveRootForPlan() : null,
     knowledgeConfig: mode === "update" ? "structured update" : "replace",
     packageJson: fs.existsSync(path.join(targetRoot, "package.json")) ? "update scripts" : "create with scripts",
     gitignore: fs.existsSync(path.join(targetRoot, ".gitignore")) ? "ensure local runtime ignores" : "create",
@@ -170,12 +286,90 @@ function buildPlan(targetRoot, mode, metadata = {}) {
 }
 
 function buildReplaceEntries(mode) {
-  if (mode === "init") return [...baseReplaceEntries, ...initOnlyReplaceEntries];
+  if (mode === "init") return initReplaceEntries;
 
   return [
-    ...baseReplaceEntries,
+    ...updateBaseReplaceEntries,
     ...starterSkillEntries()
   ];
+}
+
+function buildLegacyArchiveEntries(targetRoot, replaceEntries) {
+  const candidates = [
+    ...replaceEntries
+      .filter((action) => action.existed)
+      .map((action) => ({
+        target: action.target,
+        reason: "core-managed path being replaced"
+      })),
+    ...legacyAgentEntries.map(([target, reason]) => ({ target, reason })),
+    ...discoverLegacyAgentPatternEntries(targetRoot)
+  ];
+
+  const seen = new Set();
+  const existing = [];
+  for (const candidate of candidates) {
+    const target = normalizeRelativePath(candidate.target);
+    if (!target || seen.has(target)) continue;
+    const resolved = resolveExistingArchiveTarget(targetRoot, target);
+    if (!resolved || seen.has(resolved.identity)) continue;
+    seen.add(target);
+    seen.add(resolved.identity);
+    existing.push({ target: resolved.target, reason: candidate.reason });
+  }
+
+  existing.sort((left, right) => pathDepth(left.target) - pathDepth(right.target) || left.target.localeCompare(right.target));
+
+  const selected = [];
+  for (const entry of existing) {
+    if (selected.some((parent) => isPathInside(entry.target, parent.target))) continue;
+    selected.push(entry);
+  }
+
+  return selected;
+}
+
+function resolveExistingArchiveTarget(targetRoot, target) {
+  const absolute = path.join(targetRoot, target);
+  if (!fs.existsSync(absolute)) return null;
+
+  const identity = archivePathIdentity(absolute);
+  const realTarget = realRelativePath(targetRoot, absolute);
+  return {
+    target: realTarget || target,
+    identity
+  };
+}
+
+function archivePathIdentity(absolute) {
+  try {
+    return fs.realpathSync.native(absolute);
+  } catch {
+    return path.resolve(absolute);
+  }
+}
+
+function realRelativePath(root, absolute) {
+  try {
+    const realRoot = fs.realpathSync.native(root);
+    const realFile = fs.realpathSync.native(absolute);
+    const relative = path.relative(realRoot, realFile);
+    return normalizeRelativePath(relative);
+  } catch {
+    return null;
+  }
+}
+
+function discoverLegacyAgentPatternEntries(targetRoot) {
+  if (!fs.existsSync(targetRoot)) return [];
+
+  return fs.readdirSync(targetRoot, { withFileTypes: true })
+    .flatMap((entry) => {
+      const matches = legacyAgentEntryPatterns
+        .filter(([pattern]) => pattern.test(entry.name))
+        .map(([, reason]) => ({ target: entry.name, reason }));
+      return matches;
+    });
 }
 
 function starterSkillEntries() {
@@ -212,6 +406,14 @@ function printPlan(plan, flags, mode) {
   if (mode === "update") {
     console.log(`- .agents/knowledge.config.json (${plan.knowledgeConfig})`);
   }
+  if (mode === "init" && plan.archive.length > 0) {
+    const archiveVerb = flags.dryRun ? "would move" : "will move";
+    console.log("");
+    console.log(`Legacy agent context ${archiveVerb} to ${plan.archiveRoot}:`);
+    for (const entry of plan.archive) {
+      console.log(`- ${entry.target} (${entry.reason})`);
+    }
+  }
   console.log(`- package.json (${plan.packageJson})`);
   console.log(`- .gitignore (${plan.gitignore})`);
   if (!flags.skipCheck) {
@@ -226,21 +428,9 @@ function printPlan(plan, flags, mode) {
   console.log("");
 }
 
-async function confirmIfNeeded(plan, flags, mode) {
-  const destructive = plan.replace.filter((action) => action.existed);
-  if (destructive.length === 0 || flags.yes) return;
-
-  if (!process.stdin.isTTY) {
-    die(`Refusing to ${mode} existing managed paths without --yes in a non-interactive shell.`);
-  }
-
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const answer = await rl.question(`Overwrite existing managed Agentic Workspace Core paths for ${mode}? Type 'yes' to continue: `);
-  rl.close();
-  if (answer !== "yes") die(`${capitalize(mode)} aborted.`);
-}
-
 function applyPlan(plan, flags) {
+  const archiveResult = archiveLegacyAgentContext(plan, flags.target);
+
   for (const action of plan.replace) {
     const source = path.join(payloadRoot, action.source);
     const target = path.join(flags.target, action.target);
@@ -257,6 +447,98 @@ function applyPlan(plan, flags) {
     runNodeScript(flags.target, ".agents/knowledge-core/scripts/build-index.mjs");
     runNodeScript(flags.target, ".agents/knowledge-core/scripts/doctor.mjs");
   }
+
+  if (archiveResult && archiveResult.moved.length > 0) {
+    console.log(`Legacy agent context archived to ${archiveResult.relativeRoot}.`);
+  }
+}
+
+function archiveLegacyAgentContext(plan, targetRoot) {
+  if (plan.mode !== "init" || plan.archive.length === 0) return null;
+
+  const relativeRoot = plan.archiveRoot;
+  const absoluteRoot = path.join(targetRoot, relativeRoot);
+  const moved = [];
+
+  for (const entry of plan.archive) {
+    const source = path.join(targetRoot, entry.target);
+    if (!fs.existsSync(source)) continue;
+
+    const { destination, archivedAs } = nextAvailableArchivePath(absoluteRoot, entry.target);
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    movePath(source, destination);
+    moved.push({ ...entry, archivedAs });
+  }
+
+  if (moved.length > 0) {
+    fs.mkdirSync(absoluteRoot, { recursive: true });
+    const { destination } = nextAvailableArchivePath(absoluteRoot, "MANIFEST.md");
+    fs.writeFileSync(destination, legacyManifest(relativeRoot, moved));
+  }
+
+  return { relativeRoot, moved };
+}
+
+function movePath(source, destination) {
+  try {
+    fs.renameSync(source, destination);
+  } catch (error) {
+    if (error && error.code === "EXDEV") {
+      fs.cpSync(source, destination, { recursive: true, force: true, errorOnExist: false });
+      fs.rmSync(source, { recursive: true, force: true });
+      return;
+    }
+    throw error;
+  }
+}
+
+function legacyManifest(relativeRoot, moved) {
+  const lines = [
+    "# Legacy Agent Context Archive",
+    "",
+    `Created: ${new Date().toISOString()}`,
+    "",
+    "These files were moved by `agentic-workspace-core init` before installing the clean core agent layer.",
+    "They are preserved for review, but should not be treated as active project instructions.",
+    "",
+    `Archive path: \`${relativeRoot}\``,
+    "",
+    "Moved paths:",
+    ""
+  ];
+
+  for (const entry of moved) {
+    const suffix = entry.archivedAs === entry.target ? "" : ` -> \`${entry.archivedAs}\``;
+    lines.push(`- \`${entry.target}\`${suffix}: ${entry.reason}`);
+  }
+
+  lines.push(
+    "",
+    "To recover durable project knowledge, review these files manually and move only verified, current facts into `docs/` or procedural rules into `.agents/skills/`.",
+    "Do not treat this archive as active project instructions."
+  );
+
+  return `${lines.join("\n")}\n`;
+}
+
+function nextAvailableArchivePath(archiveRoot, relativeTarget) {
+  const initial = path.join(archiveRoot, relativeTarget);
+  if (!fs.existsSync(initial)) return { destination: initial, archivedAs: relativeTarget };
+
+  const parsed = path.posix.parse(relativeTarget);
+  const dir = parsed.dir;
+  for (let index = 2; index < 1000; index += 1) {
+    const name = `${parsed.name}.legacy-${index}${parsed.ext}`;
+    const archivedAs = dir ? path.posix.join(dir, name) : name;
+    const destination = path.join(archiveRoot, archivedAs);
+    if (!fs.existsSync(destination)) return { destination, archivedAs };
+  }
+
+  die(`Cannot find an available legacy archive path for ${relativeTarget}`);
+}
+
+function legacyArchiveRootForPlan() {
+  return "legacy";
 }
 
 function replacePath(source, target) {
@@ -453,12 +735,25 @@ function isSafeRelativePath(value) {
   return normalized !== "." && !normalized.startsWith("..") && !path.isAbsolute(normalized);
 }
 
+function normalizeRelativePath(value) {
+  if (!isSafeRelativePath(value)) return null;
+  return path.normalize(value).split(path.sep).join(path.posix.sep);
+}
+
+function pathDepth(value) {
+  return value.split("/").length;
+}
+
+function isPathInside(child, parent) {
+  return child === parent || child.startsWith(`${parent}/`);
+}
+
 function printHelp() {
   console.log(`agentic-workspace-core ${packageJson.version}
 
 Usage:
-  agentic-workspace-core init [--target <dir>] [--yes] [--dry-run] [--skip-check]
-  agentic-workspace-core update [--target <dir>] [--yes] [--dry-run] [--skip-check] [--allow-broken]
+  agentic-workspace-core init [--target <dir>] [--dry-run] [--skip-check]
+  agentic-workspace-core update [--target <dir>] [--dry-run] [--skip-check] [--allow-broken]
   agentic-workspace-core version
 `);
 }
@@ -469,7 +764,6 @@ function printInitHelp() {
 
 Options:
   --target, -C <dir>  Directory to initialize. Defaults to current directory.
-  --yes, -y          Overwrite existing managed paths without prompting.
   --dry-run          Print the init plan without writing files.
   --skip-check       Skip index rebuild and doctor validation.
 `);
@@ -483,15 +777,10 @@ Updates core-managed paths and starter skills while preserving project-specific 
 
 Options:
   --target, -C <dir>  Directory to update. Defaults to current directory.
-  --yes, -y          Overwrite existing managed paths without prompting.
   --dry-run          Print the update plan without writing files.
   --skip-check       Skip baseline check, index rebuild, and doctor validation.
   --allow-broken     Allow update when the pre-update knowledge check fails.
 `);
-}
-
-function capitalize(value) {
-  return value.slice(0, 1).toUpperCase() + value.slice(1);
 }
 
 function die(message) {

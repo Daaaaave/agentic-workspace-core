@@ -20,30 +20,30 @@ It is not an agent runtime, framework, vector database, or mandatory Obsidian va
 Run from the root of the project where agents will work:
 
 ```bash
-npm exec --yes -- agentic-workspace-core@latest init --dry-run
-npm exec --yes -- agentic-workspace-core@latest init --yes
+npx agentic-workspace-core@latest init --dry-run
+npx agentic-workspace-core@latest init
 npm run knowledge:check
 ```
 
-`init` is intentionally replace-first in `0.1.x`. Review the dry run before applying it.
+`init` itself does not require a confirmation flag. If npm asks to download the temporary package, confirm the npm prompt once.
+
+`init` is intentionally replace-first in `0.1.x`. Review the dry run before applying it when installing into an existing repository.
 
 Managed paths that may be replaced:
 
 - `AGENTS.md`
 - `CLAUDE.md`
 - `.agents/`
-- `docs/index.md`
-- `docs/knowledge-system.md`
+- `docs/`
 - `llms.txt`
-- `docs/generated/`
 
-The installer also updates `package.json` scripts and ensures `.context/` and `CLAUDE.local.md` are ignored. It does not replace unrelated project files.
+Before replacement, `init` moves existing agent-facing files, old project docs, generated LLM indexes, and agent tool rules/config into root `legacy/`. The installer also updates `package.json` scripts and ensures `.context/`, `CLAUDE.local.md`, and `legacy/` are ignored. It does not replace unrelated source code or product files.
 
 ## Update An Installed Project
 
 ```bash
-npm exec --yes -- agentic-workspace-core@latest update --dry-run
-npm exec --yes -- agentic-workspace-core@latest update --yes
+npx agentic-workspace-core@latest update --dry-run
+npx agentic-workspace-core@latest update
 npm run knowledge:check
 ```
 
@@ -60,6 +60,14 @@ npm run knowledge:check
 - `docs/`: durable project knowledge home and starter directories.
 - `docs/generated/`: generated knowledge map and graph.
 - `.context/handoffs/`: ignored runtime handoff location.
+
+## Legacy Archive
+
+On `init`, existing agent-facing context is moved into root `legacy/` before the clean core is installed. Paths keep their original relative location under `legacy/` with no package or timestamp wrapper.
+
+This includes old `AGENTS.md`/`CLAUDE.md`/`GEMINI.md`/`CODEX.md` style files, existing `.agents/`, existing `docs/`, old `llms*.txt` indexes, generic `AI.md`/`MEMORY.md` style files, and common tool-specific rule/config surfaces such as `.claude/`, `.codex/`, `.cursor/`, `.cursorignore`, `.windsurf/`, `.codeiumignore`, `.github/instructions/`, `.github/copilot-instructions.md`, `.vscode/instructions/`, `.vscode/mcp.json`, `.continue/`, `.clinerules*`, `.roo/`, `.roomodes`, `.roorules*`, `.aider*`, `.augment/`, `.devin/`, `.opencode/`, `.goose/`, `.openhands/`, `.jules/`, `.kiro/`, `.kilocode/`, `.factory/`, `.amp/`, `.warp/`, `.qwen/`, `.junie/`, `.aiassistant/`, and MCP config files.
+
+`legacy/` is preserved for manual review, but ignored by git and not treated as active project knowledge. Promote only verified, current material back into `docs/` or project-specific `.agents/skills/`.
 
 ## Starter Skills
 
