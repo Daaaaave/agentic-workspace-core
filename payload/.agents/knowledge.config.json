@@ -3,7 +3,7 @@
   "schemaVersion": "0.1.0",
   "core": {
     "name": "agentic-workspace-core",
-    "version": "0.1.6"
+    "version": "0.1.7"
   },
   "entrypoints": {
     "agentInstructions": "AGENTS.md",

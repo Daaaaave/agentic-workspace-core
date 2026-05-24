@@ -69,6 +69,15 @@ npm run knowledge:check
 
 `--skip-check` still rebuilds `llms.txt` and `.agents/generated/*`; it only skips validation checks.
 
+For controlled projects where you want the package payload reapplied from scratch, use full update:
+
+```bash
+npx agentic-workspace-core@latest update --full --dry-run
+npx agentic-workspace-core@latest update --full
+```
+
+`update --full` archives the current core layer into `legacy/` and then reinstalls `AGENTS.md`, `CLAUDE.md`, `.agents/`, `docs/`, and `llms.txt` from the package payload. This is the explicit reinstall path for early `0.1.x` projects when you want stale local agent memory, old docs skeletons, or customized core files out of the active context.
+
 ## What Gets Installed
 
 ```text
