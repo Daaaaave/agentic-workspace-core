@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
   "license": "MIT",
-  "author": "Dmitry Salatov",
   "type": "module",
   "repository": {
     "type": "git",

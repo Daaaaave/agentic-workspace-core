@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Updated security policy and release notes to reflect the public npm/GitHub release state.
+- Removed personal author metadata from `package.json`.
 
 ## 0.1.0 - 2026-05-24
 
