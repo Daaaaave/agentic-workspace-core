@@ -2,8 +2,13 @@
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.1.2 - 2026-05-24
+
 - Reworked the README around public project onboarding, install/update safety, and package maintainer workflow.
 - Removed the source-only core portability contract from the public repository and npm package surface.
+- Reduced the npm package surface to the CLI, install payload, README, changelog, license, and package metadata.
 
 ## 0.1.1 - 2026-05-24
 

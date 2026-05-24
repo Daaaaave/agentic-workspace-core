@@ -17,8 +17,7 @@ Keep the npm package focused on files needed to install, inspect, test, and publ
 
 - `bin/` for the CLI.
 - `payload/` for the exact installed workspace layer.
-- `scripts/` for release validation referenced by `package.json`.
-- public package docs such as `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, and `LICENSE`.
+- public package docs such as `README.md`, `CHANGELOG.md`, and `LICENSE`.
 
 Do not publish source-repository working context such as root dogfooding files, research notes, generated root indexes, `.context/`, logs, screenshots, or long internal planning docs. If a file teaches downstream runtime behavior, put it in `payload/`. If it only explains why this source repository changed, keep it out of the npm package.
 

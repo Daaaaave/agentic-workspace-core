@@ -1,6 +1,6 @@
 {
   "name": "agentic-workspace-core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
   "license": "MIT",
   "type": "module",
@@ -28,12 +28,9 @@
   "files": [
     "bin/",
     "CHANGELOG.md",
-    "CONTRIBUTING.md",
     "LICENSE",
     "payload/",
-    "README.md",
-    "scripts/",
-    "SECURITY.md"
+    "README.md"
   ],
   "scripts": {
     "knowledge:build": "cd payload && node .agents/knowledge-core/scripts/build-index.mjs",

@@ -15,7 +15,4 @@ coverage/
 /CLAUDE.local.md
 /llms.txt
 /.context/
-/docs/*
-!/docs/reference/
-/docs/reference/*
-!/docs/reference/core-portability-contract.md
+/docs/
