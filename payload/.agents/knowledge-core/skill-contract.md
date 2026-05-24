@@ -1,4 +1,4 @@
-# Skills Layer
+# Skill Contract
 
 Skills are procedural capability bundles for agents. They teach repeatable behavior; they do not own durable project facts.
 

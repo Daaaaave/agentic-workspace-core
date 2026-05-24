@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const payloadRoot = path.join(repoRoot, "payload");
 const cli = path.join(repoRoot, "bin/agentic-workspace-core.mjs");
+const packageJson = readJson(path.join(repoRoot, "package.json"));
 const target = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-"));
 const skipCheckTarget = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-skip-check-"));
 
@@ -46,12 +47,10 @@ function assertPayloadComplete() {
   const required = [
     "AGENTS.md",
     "CLAUDE.md",
-    "gitignore",
+    "gitignore.fragment",
     "llms.txt",
-    "docs/index.md",
-    "docs/knowledge-system.md",
-    "docs/generated/knowledge-map.md",
-    "docs/generated/knowledge-graph.json",
+    ".agents/generated/knowledge-map.md",
+    ".agents/generated/knowledge-graph.json",
     "docs/architecture/.gitkeep",
     "docs/components/.gitkeep",
     "docs/domain/.gitkeep",
@@ -62,7 +61,6 @@ function assertPayloadComplete() {
     "docs/plans/.gitkeep",
     "docs/reference/.gitkeep",
     "docs/glossary/.gitkeep",
-    ".agents/README.md",
     ".agents/knowledge.config.json",
     ".agents/knowledge-core/manifest.json",
     ".agents/knowledge-core/scripts/build-index.mjs",
@@ -83,6 +81,11 @@ function assertPayloadComplete() {
 
   const missing = required.filter((file) => !fs.existsSync(path.join(payloadRoot, file)));
   if (missing.length > 0) throw new Error(`Payload is incomplete:\n${missing.join("\n")}`);
+
+  const manifest = readJson(path.join(payloadRoot, ".agents/knowledge-core/manifest.json"));
+  if (manifest.version !== packageJson.version) {
+    throw new Error(`Payload manifest version ${manifest.version} does not match package version ${packageJson.version}`);
+  }
 
   const config = readJson(path.join(payloadRoot, ".agents/knowledge.config.json"));
   const configuredDocDirs = config.documents?.defaultDirectories || [];
@@ -142,6 +145,9 @@ Project-local skill kept across core updates.
 | --- | --- |
 | "Review code and also consider local conventions." | Uses the development workflow and may consult this local skill if available. |
 `);
+
+  writeText(path.join(root, ".agents/README.md"), "# Stale managed README\n");
+  fs.mkdirSync(path.join(root, "docs/generated"), { recursive: true });
 }
 
 function addLegacyInputs(root) {
@@ -188,13 +194,10 @@ function verifyInstalledCore(root) {
     "CLAUDE.md",
     ".gitignore",
     "llms.txt",
-    "docs/index.md",
-    "docs/knowledge-system.md",
-    "docs/generated/knowledge-map.md",
-    "docs/generated/knowledge-graph.json",
+    ".agents/generated/knowledge-map.md",
+    ".agents/generated/knowledge-graph.json",
     "docs/architecture/.gitkeep",
     "docs/research/.gitkeep",
-    ".agents/README.md",
     ".agents/knowledge.config.json",
     ".agents/knowledge-core/manifest.json",
     ".agents/skills/software-development-workflow/SKILL.md",
@@ -203,6 +206,11 @@ function verifyInstalledCore(root) {
   ];
   const missing = required.filter((file) => !fs.existsSync(path.join(root, file)));
   if (missing.length > 0) throw new Error(`Installed core is incomplete:\n${missing.join("\n")}`);
+
+  const manifest = readJson(path.join(root, ".agents/knowledge-core/manifest.json"));
+  if (manifest.version !== packageJson.version) {
+    throw new Error(`Installed manifest version ${manifest.version} does not match package version ${packageJson.version}`);
+  }
 
   const config = readJson(path.join(root, ".agents/knowledge.config.json"));
   const configuredDocDirs = config.documents?.defaultDirectories || [];
@@ -308,7 +316,9 @@ function verifyLocalOverrides(root) {
     [config.ignore.authoredDocs.includes("docs/private/**"), "custom ignored doc pattern was not preserved"],
     [fs.existsSync(path.join(root, "docs/custom/.gitkeep")), "custom docs directory was not preserved"],
     [fs.existsSync(path.join(root, ".agents/skills/local-reviewer/SKILL.md")), "custom skill was not preserved"],
-    [fs.existsSync(path.join(root, ".agents/evals/skills/local-reviewer.eval.md")), "custom skill eval was not preserved"]
+    [fs.existsSync(path.join(root, ".agents/evals/skills/local-reviewer.eval.md")), "custom skill eval was not preserved"],
+    [!fs.existsSync(path.join(root, ".agents/README.md")), "obsolete .agents/README.md was not removed"],
+    [!fs.existsSync(path.join(root, "docs/generated")), "obsolete docs/generated was not removed"]
   ];
 
   const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);

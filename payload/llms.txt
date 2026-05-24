@@ -5,27 +5,21 @@
 Agent instructions:
 - `AGENTS.md`
 - `CLAUDE.md`
-- `.agents/README.md`
 
-Project knowledge:
-- `docs/index.md`
-- `docs/generated/knowledge-map.md`
+Knowledge navigation:
+- `.agents/generated/knowledge-map.md`
 
 Core specification:
 - `.agents/knowledge-core/README.md`
 - `.agents/knowledge.config.json`
-- `.agents/knowledge-core/schema.md`
-- `.agents/knowledge-core/lifecycle.md`
-- `.agents/knowledge-core/routing.md`
-- `.agents/knowledge-core/memory-taxonomy.md`
-- `.agents/knowledge-core/agent-memory-policy.md`
-- `.agents/knowledge-core/skills.md`
+- `.agents/knowledge-core/document-schema.md`
+- `.agents/knowledge-core/memory-policy.md`
+- `.agents/knowledge-core/skill-contract.md`
 
 Authored documents:
 
-- `docs/index.md` - project.index: Human-readable home and routing map for repository knowledge.
-- `docs/knowledge-system.md` - project.knowledge-system: Repository-local policy for using Agentic Workspace Core's portable knowledge system.
+- _No authored knowledge documents found._
 
 Generated outputs:
-- `docs/generated/knowledge-map.md`
-- `docs/generated/knowledge-graph.json`
+- `.agents/generated/knowledge-map.md`
+- `.agents/generated/knowledge-graph.json`

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "0.1.0",
+  "core": {
+    "name": "agentic-workspace-core",
+    "version": "0.1.4"
+  },
+  "generated": true,
+  "source": "docs",
+  "nodes": [],
+  "edges": []
+}

@@ -227,5 +227,4 @@ The next agent should be able to read the handoff, verify current repo state, an
 ## References
 
 - `.agents/knowledge-core/templates/handoff.md`
-- `.agents/knowledge-core/routing.md`
-- `.agents/knowledge-core/agent-memory-policy.md`
+- `.agents/knowledge-core/memory-policy.md`

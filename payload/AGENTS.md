@@ -2,39 +2,39 @@
 
 This repository uses Agentic Workspace Core.
 
-## Entrypoints
+## Operating Model
 
-- `AGENTS.md` is the authoritative instruction file for coding agents.
-- `CLAUDE.md` is a Claude Code compatibility proxy that imports `AGENTS.md`.
-- `llms.txt` is a generated knowledge index, not an instruction file.
-- `docs/index.md` is the human-readable knowledge home.
-- `.agents/README.md` explains the agent layer.
-- `.agents/knowledge-core/README.md` explains the portable knowledge core.
-- `.agents/knowledge-core/agent-memory-policy.md` governs memory reads, writes, corrections, consolidation, deletion, and trust.
+- Treat `AGENTS.md` as the always-on orientation for coding agents in this repository.
+- `CLAUDE.md` is a Claude Code compatibility proxy that imports this file.
+- Use `llms.txt` as generated navigation for finding knowledge, rather than as instructions or canonical truth.
+- Use the matching skill when available; skill descriptions own detailed triggers for project knowledge, coding workflow, source-backed research, skill authoring, and handoffs.
+- Read deeper core files only when they can affect the current task.
 
-## Knowledge Rules
+## Knowledge Model
 
 - Durable project knowledge belongs in `docs/`.
-- Agent skills belong in `.agents/skills/` and must stay procedural.
-- Skill evals belong in `.agents/evals/skills/`.
-- Runtime handoffs belong in `.context/handoffs/`.
-- Legacy pre-install material belongs in `legacy/` and is inactive archive material, not project knowledge.
-- Generated files must be rebuilt, not edited as canonical sources.
-- Do not scan `.context/` as project knowledge unless the task explicitly involves handoffs or runtime artifacts.
-- Do not scan `legacy/` as project knowledge unless the task explicitly asks to migrate or audit archived pre-install material.
-- Candidate memories must pass `.agents/knowledge-core/agent-memory-policy.md` before becoming durable.
+- Generated navigation lives in `llms.txt` and `.agents/generated/*`; update authored sources and rebuild generated outputs.
+- Runtime transfer state belongs in `.context/handoffs/`.
+- Pre-install archived material belongs in `legacy/`.
+- Agent procedures belong in `.agents/skills/`; trigger checks belong in `.agents/evals/skills/`.
+- Candidate durable memories pass through `.agents/knowledge-core/memory-policy.md` before becoming project knowledge.
 
-## Working Protocol
+## Core Routing
 
-- Before non-trivial work that may depend on project conventions, architecture, workflows, decisions, domain terms, or known gotchas, use the `project-knowledge` skill if available.
-- For non-trivial coding work, use `software-development-workflow` if available.
-- For external/current/source-backed research, use `research-to-knowledge`.
-- For creating or changing skills, use `write-agent-skill`.
-- For temporary transfer state, use `write-agent-handoff`.
-- If no relevant durable knowledge exists, say so and fall back to code, tests, and user-provided facts.
+- Use `.agents/knowledge-core/memory-policy.md` for memory reads and writes, routing, trust, correction, consolidation, deletion, lifecycle, templates, generated outputs, handoffs, legacy archive, and adapters.
+- Use `.agents/knowledge-core/document-schema.md` when creating or updating authored docs in `docs/`.
+- Use `.agents/knowledge-core/skill-contract.md` when creating or updating skills or skill evals.
 
-## Maintenance
+## Work Rhythm
 
-- After authored docs change, run `npm run knowledge:build`.
-- Before finishing knowledge-core work, run `npm run knowledge:check`.
-- Keep `llms.txt` and `docs/generated/*` generated.
+- Before non-trivial work, check whether repository knowledge could change the answer.
+- For implementation, repair, refactor, review, or testing work, follow the matching development workflow when available.
+- For current external claims or best-practice comparisons, gather source-backed evidence before relying on memory.
+- If no relevant durable knowledge exists, state that and proceed from code, tests, current sources, and user-provided facts.
+- When a reusable project fact changes, route it through the memory policy before making it durable.
+
+## Completion
+
+- Before finishing non-trivial work, check whether a durable project fact, decision, workflow, runbook, invariant, reusable gotcha, or user correction changed; if so, route it through the memory policy, and if not, do not write memory.
+- Rebuild generated indexes after authored knowledge changes: `npm run knowledge:build`.
+- Run `npm run knowledge:check` before finishing knowledge-core, schema, skill, or generated-index work.

@@ -116,22 +116,17 @@ function relativeFromGenerated(config, file) {
 function buildLlmsTxt(config, manifest, docs) {
   const agentEntrypoints = unique([
     config.entrypoints.agentInstructions,
-    manifest.entrypoints?.claudeInstructions,
-    manifest.entrypoints?.agentLayerReadme
+    manifest.entrypoints?.claudeInstructions
   ]);
-  const projectKnowledge = unique([
-    config.entrypoints.humanKnowledgeHome,
+  const knowledgeNavigation = unique([
     config.generated.knowledgeMap
   ]);
   const coreSpecification = unique([
     manifest.canonicalPaths?.core ? path.posix.join(manifest.canonicalPaths.core, "README.md") : null,
     manifest.canonicalPaths?.config,
-    manifest.canonicalPaths?.schema,
-    manifest.canonicalPaths?.lifecycle,
-    manifest.canonicalPaths?.routing,
-    manifest.canonicalPaths?.memoryTaxonomy,
-    manifest.canonicalPaths?.agentMemoryPolicy,
-    manifest.canonicalPaths?.skillsSpec
+    manifest.canonicalPaths?.documentSchema,
+    manifest.canonicalPaths?.memoryPolicy,
+    manifest.canonicalPaths?.skillContract
   ]);
   const generatedOutputs = unique(Object.values(config.generated || {}).filter((file) => file !== config.generated.llmsTxt));
 
@@ -147,10 +142,10 @@ function buildLlmsTxt(config, manifest, docs) {
 
   lines.push(
     "",
-    "Project knowledge:"
+    "Knowledge navigation:"
   );
 
-  for (const file of projectKnowledge) lines.push(`- \`${file}\``);
+  for (const file of knowledgeNavigation) lines.push(`- \`${file}\``);
 
   lines.push(
     "",

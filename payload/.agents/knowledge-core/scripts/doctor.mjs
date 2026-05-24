@@ -103,7 +103,7 @@ function validateConfigShape(config) {
   if (!isPlainObject(config.project)) fail(configPath, "project must be an object");
 
   if (isPlainObject(config.entrypoints)) {
-    for (const key of ["agentInstructions", "knowledgeIndex", "humanKnowledgeHome"]) {
+    for (const key of ["agentInstructions", "knowledgeIndex"]) {
       validateRelativePath(config.entrypoints[key], `entrypoints.${key}`);
     }
   }
@@ -161,8 +161,7 @@ function validateCorePaths(config, manifest) {
 
   const expectedEntrypoints = {
     agentInstructions: manifest.entrypoints?.agentInstructions,
-    knowledgeIndex: manifest.entrypoints?.knowledgeIndex,
-    humanKnowledgeHome: manifest.entrypoints?.humanKnowledgeHome
+    knowledgeIndex: manifest.entrypoints?.knowledgeIndex
   };
   for (const [name, expected] of Object.entries(expectedEntrypoints)) {
     if (expected && config.entrypoints?.[name] !== expected) {
@@ -172,7 +171,7 @@ function validateCorePaths(config, manifest) {
 
   const expectedPaths = {
     docsRoot: manifest.canonicalPaths?.docs,
-    generatedRoot: manifest.canonicalPaths?.generatedDocs,
+    generatedRoot: manifest.canonicalPaths?.generatedIndexes,
     handoffsRoot: manifest.canonicalPaths?.handoffs,
     skillsRoot: manifest.canonicalPaths?.skills,
     evalsRoot: manifest.canonicalPaths?.evals,
