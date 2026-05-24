@@ -33,8 +33,7 @@
     "payload/",
     "README.md",
     "scripts/",
-    "SECURITY.md",
-    "docs/reference/core-portability-contract.md"
+    "SECURITY.md"
   ],
   "scripts": {
     "knowledge:build": "cd payload && node .agents/knowledge-core/scripts/build-index.mjs",
