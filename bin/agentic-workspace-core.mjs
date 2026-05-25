@@ -244,6 +244,7 @@ async function init(flags) {
     return;
   }
 
+  ensureSafeTarget(flags.target);
   ensureDirectory(flags.target);
 
   const plan = buildPlan(flags.target, "init");
@@ -262,6 +263,7 @@ async function update(flags) {
     return;
   }
 
+  ensureSafeTarget(flags.target);
   ensureExistingDirectory(flags.target);
   const installedManifest = readInstalledManifest(flags.target);
   const plan = buildPlan(flags.target, "update", {
@@ -773,6 +775,13 @@ function ensureDirectory(dir) {
 function ensureExistingDirectory(dir) {
   if (!fs.existsSync(dir)) die(`Target directory does not exist: ${dir}`);
   if (!fs.statSync(dir).isDirectory()) die(`Target is not a directory: ${dir}`);
+}
+
+function ensureSafeTarget(targetRoot) {
+  const segments = path.resolve(targetRoot).split(path.sep).filter(Boolean);
+  if (segments.includes(".context")) {
+    die("Refusing to install inside .context. .context is runtime scratch space; run from the repository root or pass --target <repo-root>.");
+  }
 }
 
 function readInstalledManifest(targetRoot) {
