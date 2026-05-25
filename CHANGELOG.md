@@ -4,6 +4,12 @@
 
 No unreleased changes.
 
+## 0.1.9 - 2026-05-25
+
+- Tightened `project-knowledge` recall, stale generated navigation, and knowledge-gap handling so agents avoid noisy recall announcements, distrust stale generated indexes, and stop on risky missing-owner cases.
+- Clarified memory policy authority, draft retention, stale generated navigation, and adapter write rules.
+- Updated `AGENTS.md` completion guidance to require `knowledge:check` after authored-doc work.
+
 ## 0.1.8 - 2026-05-25
 
 - Clarified the project knowledge skill's read and retrieval flow so agents use generated navigation as a locator, rank authored owners by evidence, and report knowledge gaps instead of bulk-reading or inventing missing process.

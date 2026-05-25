@@ -50,7 +50,7 @@ The policy authority for memory behavior is `.agents/knowledge-core/memory-polic
 
 Find the smallest reliable context set before acting. `.agents/knowledge-core/memory-policy.md` owns the policy; this section is the default operating procedure.
 
-1. State the recall target in one sentence.
+1. Name the recall target internally, or state it briefly only when it helps the user.
 2. Read `AGENTS.md` if it has not already been provided in the session.
 3. Read `llms.txt` for compact navigation.
 4. Build two to four focused search probes from Retrieval Heuristics below.
@@ -88,7 +88,7 @@ Prefer candidates in this order:
 | Specificity | Component, runbook, decision, domain, or API owner over broad overview or reference table when both match. |
 | Authority | Authored docs over generated indexes, adapter output, vector hits, graph neighborhoods, logs, issues, comments, or transcripts. |
 
-Use path hints only to reduce search noise. If the generated index is missing or weak, inspect `.agents/knowledge.config.json` for configured doc roots and `.agents/knowledge-core/memory-policy.md` Routing for ownership rules.
+Use path hints only to reduce search noise. If generated navigation is missing, stale, suspicious, or weak, do not trust it; search authored docs directly, inspect `.agents/knowledge.config.json` for configured doc roots, and use `.agents/knowledge-core/memory-policy.md` Routing for ownership rules. Rebuild and validate generated indexes when changing knowledge.
 
 ## Knowledge Gap Handling
 
@@ -99,7 +99,7 @@ Produce a compact gap note:
 - Missing owner or source.
 - Evidence checked.
 - `known`, `inferred`, `unknown`, and `blocked`.
-- Safe next action: proceed with labeled assumptions, ask/report the blocker, or create/update an owner through the write gate.
+- Safe next action: proceed with labeled assumptions only for low-risk reversible work; stop, ask, or report the blocker for deployment, migration, auth, security, release, data-changing, or irreversible work; create/update an owner only through the write gate.
 
 ## Write Protocol
 
