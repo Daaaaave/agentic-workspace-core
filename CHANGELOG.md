@@ -4,6 +4,12 @@
 
 No unreleased changes.
 
+## 0.1.10 - 2026-05-25
+
+- Added a CLI guard that refuses `init` or `update` targets inside `.context`, preventing accidental installation into runtime scratch space.
+- Clarified README install guidance so agents use the npm CLI instead of cloning the GitHub repository into target projects.
+- Added smoke coverage for the `.context` target guard.
+
 ## 0.1.9 - 2026-05-25
 
 - Tightened `project-knowledge` recall, stale generated navigation, and knowledge-gap handling so agents avoid noisy recall announcements, distrust stale generated indexes, and stop on risky missing-owner cases.

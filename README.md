@@ -34,6 +34,14 @@ npm run knowledge:check
 
 `init` does not require a package-level confirmation flag. If npm asks to download the package for `npx`, confirm npm's prompt once.
 
+Do not clone this GitHub repository into the target project. Install through the npm CLI above so the package can place its managed files at the project root. Do not install into `.context`; that directory is ignored runtime scratch space. If the working directory is uncertain, resolve the repository root first and pass it explicitly:
+
+```bash
+repo_root="$(git rev-parse --show-toplevel)"
+npx agentic-workspace-core@latest init --target "$repo_root" --dry-run
+npx agentic-workspace-core@latest init --target "$repo_root"
+```
+
 ## Important: `0.1.x` Install Mode
 
 `0.1.x` is intentionally replace-first. It is best for controlled projects where you want a clean Agentic Workspace Core layer.

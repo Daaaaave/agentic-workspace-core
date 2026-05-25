@@ -16,6 +16,7 @@ const skipCheckTarget = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-skip-ch
 
 try {
   assertPayloadComplete();
+  verifyContextTargetGuard();
   runCli(["init", "--target", skipCheckTarget, "--skip-check"]);
   verifyInstalledCore(skipCheckTarget);
   addLegacyInputs(target);
@@ -49,6 +50,27 @@ function runCli(args) {
   if (result.status !== 0) {
     throw new Error(`CLI command failed: ${args.join(" ")}`);
   }
+}
+
+function runCliExpectFailure(args, expectedText) {
+  const result = spawnSync(process.execPath, [cli, ...args], {
+    cwd: repoRoot,
+    encoding: "utf8"
+  });
+  if (result.error) throw result.error;
+  if (result.status === 0) {
+    throw new Error(`CLI command unexpectedly succeeded: ${args.join(" ")}`);
+  }
+  const output = `${result.stdout || ""}${result.stderr || ""}`;
+  if (!output.includes(expectedText)) {
+    throw new Error(`CLI failure did not include expected text "${expectedText}":\n${output}`);
+  }
+}
+
+function verifyContextTargetGuard() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-context-guard-"));
+  const contextTarget = path.join(root, ".context", "agentic-workspace-core");
+  runCliExpectFailure(["init", "--target", contextTarget, "--dry-run"], "Refusing to install inside .context");
 }
 
 function assertPayloadComplete() {
