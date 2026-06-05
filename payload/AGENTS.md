@@ -12,7 +12,7 @@ This repository uses Agentic Workspace Core.
 
 ## Knowledge Model
 
-- Durable project knowledge belongs in `docs/`.
+- Durable project knowledge belongs in configured authored-doc directories under `docs/`.
 - Generated navigation lives in `llms.txt` and `.agents/generated/*`; update authored sources and rebuild generated outputs.
 - Runtime transfer state belongs in `.context/handoffs/`.
 - Pre-install archived material belongs in `legacy/`.

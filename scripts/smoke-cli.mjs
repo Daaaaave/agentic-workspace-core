@@ -23,6 +23,7 @@ try {
   runCli(["init", "--target", target]);
   verifyInstalledCore(target);
   verifyLegacyArchive(target);
+  verifyMisplacedDocumentRejected(target);
   addLocalOverrides(target);
   runCli(["update", "--target", target]);
   verifyInstalledCore(target);
@@ -78,6 +79,21 @@ function runCliCapture(args) {
     throw new Error(`CLI command failed: ${args.join(" ")}\n${result.stdout || ""}${result.stderr || ""}`);
   }
   return `${result.stdout || ""}${result.stderr || ""}`;
+}
+
+function runNpmExpectFailure(root, script, expectedText) {
+  const result = spawnSync("npm", ["run", script], {
+    cwd: root,
+    encoding: "utf8"
+  });
+  if (result.error) throw result.error;
+  if (result.status === 0) {
+    throw new Error(`npm run ${script} unexpectedly succeeded`);
+  }
+  const output = `${result.stdout || ""}${result.stderr || ""}`;
+  if (!output.includes(expectedText)) {
+    throw new Error(`npm run ${script} failure did not include expected text "${expectedText}":\n${output}`);
+  }
 }
 
 function verifyContextTargetGuard() {
@@ -430,6 +446,27 @@ function verifyLegacyArchive(root) {
   if (activeAgents.includes("legacy root instructions")) {
     throw new Error("Legacy AGENTS.md content leaked into active AGENTS.md");
   }
+}
+
+function verifyMisplacedDocumentRejected(root) {
+  const file = path.join(root, "docs/root-owned.md");
+  writeText(file, `---
+id: smoke.root-doc
+type: reference
+status: current
+owner: smoke
+summary: Smoke document intentionally placed at docs root.
+canonical_for:
+  - smoke-root-doc
+last_reviewed: 2026-06-05
+---
+
+# Root-Owned Doc
+
+This document should fail placement validation.
+`);
+  runNpmExpectFailure(root, "knowledge:doctor", "authored docs must live under documents.defaultDirectories");
+  fs.rmSync(file, { force: true });
 }
 
 function verifyLocalOverrides(root) {

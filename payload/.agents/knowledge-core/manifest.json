@@ -1,6 +1,6 @@
 {
   "name": "agentic-workspace-core",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "schemaVersion": "0.1.0",
   "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
   "entrypoints": {

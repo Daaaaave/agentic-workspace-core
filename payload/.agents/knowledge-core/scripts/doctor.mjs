@@ -129,6 +129,9 @@ function validateConfigShape(config) {
     }
     for (const dir of asArray(config.documents.defaultDirectories)) {
       validateRelativePath(dir, "documents.defaultDirectories[]");
+      if (config.paths?.docsRoot && !isInsideOrEqual(dir, config.paths.docsRoot)) {
+        fail(configPath, `documents.defaultDirectories[] must be under paths.docsRoot: ${dir}`);
+      }
     }
   }
 
@@ -602,6 +605,17 @@ function validateKnowledgeGraph(docs, config, schema) {
   }
 }
 
+function validateDocumentLocations(config, docs) {
+  const defaultDirectories = asArray(config.documents?.defaultDirectories);
+  if (defaultDirectories.length === 0) return;
+
+  for (const doc of docs) {
+    if (!defaultDirectories.some((dir) => isInsideOrEqual(doc.file, dir))) {
+      fail(doc.file, `authored docs must live under documents.defaultDirectories; move this file under one of: ${defaultDirectories.join(", ")}`);
+    }
+  }
+}
+
 function main() {
   const config = readJson(configPath);
   const manifest = readJson(manifestPath);
@@ -617,6 +631,8 @@ function main() {
     includeMissingFrontmatter: true,
     parseFrontmatter: { onError: fail }
   });
+
+  validateDocumentLocations(config || {}, docs);
 
   for (const { file, frontmatter } of docs) {
     if (documentSchema) validateFrontmatter(file, frontmatter, documentSchema);

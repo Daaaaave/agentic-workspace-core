@@ -107,7 +107,7 @@ Write durable memory only after `.agents/knowledge-core/memory-policy.md` write 
 
 1. Search for an existing owner by `id`, `canonical_for`, title, keywords, synonyms, and related code paths.
 2. If an owner exists, update that document in place with the smallest clear patch.
-3. If no owner exists, create a new authored doc under the configured `docs/` path only when the topic is durable, shared, evidence-backed, and findable.
+3. If no owner exists, create a new authored doc in the configured default directory selected by `.agents/knowledge-core/memory-policy.md` Routing and `.agents/knowledge.config.json`; do not write authored docs directly under `docsRoot`.
 4. Use templates from `.agents/knowledge-core/templates/` only as optional scaffolds. Keep useful sections, remove placeholders and fake examples, and write a smaller schema-valid doc when no template fits.
 5. Follow `.agents/knowledge-core/document-schema.md` frontmatter. Do not invent arbitrary keys.
 6. Preserve provenance:
