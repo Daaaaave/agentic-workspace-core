@@ -4,6 +4,13 @@
 
 No unreleased changes.
 
+## 0.2.4 - 2026-06-05
+
+- Made `update` self-repairing by applying the fresh package payload before rebuilding or validating knowledge, instead of running stale target scripts during archive.
+- Added recovery for partial installs where core markers remain but `.agents` or its manifest files are missing.
+- Added an unsafe-plan guard so normal update refuses to archive active core paths; use `--full` for intentional full reinstall.
+- Added smoke coverage for broken-core update recovery and partial-install recovery.
+
 ## 0.2.3 - 2026-06-05
 
 - Added doctor enforcement that authored docs must live inside configured `documents.defaultDirectories` instead of directly under `docsRoot`.
