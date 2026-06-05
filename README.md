@@ -115,6 +115,7 @@ legacy/              # ignored, created only when old agent context is archived
 
 ## Starter Skills
 
+- `frontend-ui-workflow`: frontend/UI build, redesign, polish, review, product-appropriate design taste, design-system consistency, accessibility, responsive behavior, and visual verification.
 - `project-knowledge`: recall, route, write, correct, and validate durable repository knowledge.
 - `research-to-knowledge`: source-backed research and research persistence.
 - `software-development-workflow`: non-trivial coding work from task contract through verified completion.

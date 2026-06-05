@@ -127,6 +127,7 @@ Evals are not benchmark reports. They are compact regression tests for trigger p
 
 The portable v0 starter set is intentionally small:
 
+- `frontend-ui-workflow`: frontend/UI build, redesign, polish, review, product-appropriate design taste, design-system consistency, responsive behavior, accessibility, and visual verification.
 - `project-knowledge`: read, route, write, crystallize, maintain, and validate durable repository knowledge.
 - `research-to-knowledge`: turn source-backed external research into recommendations or durable research docs.
 - `software-development-workflow`: route non-trivial coding tasks through scope, context, implementation, debugging, security, and done gates.

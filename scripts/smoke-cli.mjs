@@ -95,6 +95,7 @@ function assertPayloadComplete() {
     ".agents/knowledge-core/manifest.json",
     ".agents/knowledge-core/scripts/build-index.mjs",
     ".agents/knowledge-core/scripts/doctor.mjs",
+    ".agents/skills/frontend-ui-workflow/SKILL.md",
     ".agents/skills/project-knowledge/SKILL.md",
     ".agents/skills/research-to-knowledge/SKILL.md",
     ".agents/skills/software-development-workflow/SKILL.md",
@@ -106,6 +107,7 @@ function assertPayloadComplete() {
     ".agents/skills/software-development-workflow/references/done-gate.md",
     ".agents/skills/write-agent-handoff/SKILL.md",
     ".agents/skills/write-agent-skill/SKILL.md",
+    ".agents/evals/skills/frontend-ui-workflow.eval.md",
     ".agents/evals/skills/software-development-workflow.eval.md"
   ];
 

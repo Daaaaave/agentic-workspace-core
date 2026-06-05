@@ -4,6 +4,12 @@
 
 No unreleased changes.
 
+## 0.2.0 - 2026-06-05
+
+- Added `frontend-ui-workflow` as a starter skill for frontend/UI build, redesign, polish, review, design-system consistency, accessibility, responsive behavior, and visual verification.
+- Added eval coverage for frontend/UI routing, design-system drift, reference handling, product-appropriate visual direction, runtime verification, and neighboring-skill boundaries.
+- Added the frontend/UI skill to the portable skill manifest, README starter-skill list, and smoke payload completeness checks.
+
 ## 0.1.10 - 2026-05-25
 
 - Added a CLI guard that refuses `init` or `update` targets inside `.context`, preventing accidental installation into runtime scratch space.
