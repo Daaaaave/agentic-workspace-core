@@ -130,11 +130,13 @@ Installed projects get:
 npm run knowledge:build
 npm run knowledge:doctor
 npm run knowledge:check
+npm run awc:update:check
 ```
 
 - `knowledge:build` regenerates `llms.txt` and `.agents/generated/*`.
 - `knowledge:doctor` validates docs, skills, evals, config, and core paths.
 - `knowledge:check` verifies generated files are current and runs the doctor.
+- `awc:update:check` runs `agentic-workspace-core@latest update --if-newer`; it no-ops when current and updates the managed core when a newer package is available.
 
 ## Design Rules
 

@@ -38,3 +38,4 @@ This repository uses Agentic Workspace Core.
 - Before finishing non-trivial work, check whether a durable project fact, decision, workflow, runbook, invariant, reusable gotcha, or user correction changed; if so, route it through the memory policy, and if not, do not write memory.
 - Rebuild generated indexes after authored knowledge changes: `npm run knowledge:build`.
 - Run `npm run knowledge:check` before finishing authored-doc, knowledge-core, schema, skill, or generated-index work.
+- After `npm run knowledge:check`, run `npm run awc:update:check`.

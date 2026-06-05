@@ -4,6 +4,11 @@
 
 No unreleased changes.
 
+## 0.2.2 - 2026-06-05
+
+- Added `update --if-newer` and installed `awc:update:check` script so clients can no-op when current or apply the latest managed core when a newer package is available.
+- Added `AGENTS.md` completion guidance to run `awc:update:check` after `knowledge:check`.
+
 ## 0.2.1 - 2026-06-05
 
 - Relaxed `frontend-ui-workflow` screenshot guidance so screenshots are used only when they materially improve visual evidence, not as a fixed ritual for every frontend task.

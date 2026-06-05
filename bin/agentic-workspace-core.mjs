@@ -167,7 +167,8 @@ function parseFlags(values) {
     dryRun: false,
     skipCheck: false,
     allowBroken: false,
-    full: false
+    full: false,
+    ifNewer: false
   };
 
   for (let index = 0; index < values.length; index += 1) {
@@ -201,6 +202,10 @@ function parseFlags(values) {
     }
     if (arg === "--full") {
       flags.full = true;
+      continue;
+    }
+    if (arg === "--if-newer") {
+      flags.ifNewer = true;
       continue;
     }
     if (arg === "--help" || arg === "-h") {
@@ -266,6 +271,17 @@ async function update(flags) {
   ensureSafeTarget(flags.target);
   ensureExistingDirectory(flags.target);
   const installedManifest = readInstalledManifest(flags.target);
+  if (flags.ifNewer) {
+    const versionComparison = compareVersions(packageManifest.version, installedManifest.version);
+    if (versionComparison === 0) {
+      console.log(`Agentic Workspace Core is current: ${installedManifest.version}.`);
+      return;
+    }
+    if (versionComparison < 0) {
+      console.log(`Agentic Workspace Core is newer than this package: installed ${installedManifest.version}, package ${packageManifest.version}. No update applied.`);
+      return;
+    }
+  }
   const plan = buildPlan(flags.target, "update", {
     currentVersion: installedManifest.version,
     targetVersion: packageManifest.version,
@@ -715,7 +731,8 @@ function updatePackageJson(targetRoot) {
     ...(isPlainObject(pkg.scripts) ? pkg.scripts : {}),
     "knowledge:build": "node .agents/knowledge-core/scripts/build-index.mjs",
     "knowledge:doctor": "node .agents/knowledge-core/scripts/doctor.mjs",
-    "knowledge:check": "node .agents/knowledge-core/scripts/build-index.mjs --check && npm run knowledge:doctor"
+    "knowledge:check": "node .agents/knowledge-core/scripts/build-index.mjs --check && npm run knowledge:doctor",
+    "awc:update:check": "npx --yes agentic-workspace-core@latest update --if-newer"
   };
   writeJson(file, pkg);
 }
@@ -844,6 +861,33 @@ function pathDepth(value) {
   return value.split("/").length;
 }
 
+function compareVersions(left, right) {
+  if (left === right) return 0;
+  const leftParsed = parseVersion(left);
+  const rightParsed = parseVersion(right);
+  if (!leftParsed || !rightParsed) return left.localeCompare(right);
+
+  for (let index = 0; index < 3; index += 1) {
+    if (leftParsed.numbers[index] > rightParsed.numbers[index]) return 1;
+    if (leftParsed.numbers[index] < rightParsed.numbers[index]) return -1;
+  }
+
+  if (!leftParsed.prerelease && rightParsed.prerelease) return 1;
+  if (leftParsed.prerelease && !rightParsed.prerelease) return -1;
+  if (leftParsed.prerelease === rightParsed.prerelease) return 0;
+  return leftParsed.prerelease.localeCompare(rightParsed.prerelease);
+}
+
+function parseVersion(value) {
+  if (typeof value !== "string") return null;
+  const match = value.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/);
+  if (!match) return null;
+  return {
+    numbers: [Number(match[1]), Number(match[2]), Number(match[3])],
+    prerelease: match[4] || ""
+  };
+}
+
 function isPathInside(child, parent) {
   return child === parent || child.startsWith(`${parent}/`);
 }
@@ -853,7 +897,7 @@ function printHelp() {
 
 Usage:
   agentic-workspace-core init [--target <dir>] [--dry-run] [--skip-check]
-  agentic-workspace-core update [--target <dir>] [--dry-run] [--skip-check] [--allow-broken] [--full]
+  agentic-workspace-core update [--target <dir>] [--dry-run] [--skip-check] [--allow-broken] [--full] [--if-newer]
   agentic-workspace-core version
 `);
 }
@@ -883,6 +927,7 @@ Options:
   --skip-check       Rebuild generated indexes but skip baseline check and doctor validation.
   --allow-broken     Allow update when the pre-update knowledge check fails.
   --full             Archive the current core layer and reinstall the full package payload.
+  --if-newer         No-op unless this package version is newer than the installed core.
 `);
 }
 
