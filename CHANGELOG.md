@@ -4,6 +4,11 @@
 
 No unreleased changes.
 
+## 0.2.5 - 2026-06-05
+
+- Fixed normal update planning for legacy symlinks such as `.claude -> .agents` so the updater archives the symlink itself instead of resolving it to the active `.agents` core layer.
+- Added smoke coverage for `.claude` symlink cleanup during broken-core update recovery.
+
 ## 0.2.4 - 2026-06-05
 
 - Made `update` self-repairing by applying the fresh package payload before rebuilding or validating knowledge, instead of running stale target scripts during archive.
