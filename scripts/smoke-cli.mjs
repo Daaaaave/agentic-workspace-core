@@ -13,12 +13,18 @@ const cli = path.join(repoRoot, "bin/agentic-workspace-core.mjs");
 const packageJson = readJson(path.join(repoRoot, "package.json"));
 const target = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-"));
 const skipCheckTarget = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-skip-check-"));
+const brokenUpdateTarget = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-broken-update-"));
+const partialInstallTarget = fs.mkdtempSync(path.join(os.tmpdir(), "awc-smoke-partial-install-"));
 
 try {
   assertPayloadComplete();
   verifyContextTargetGuard();
   runCli(["init", "--target", skipCheckTarget, "--skip-check"]);
   verifyInstalledCore(skipCheckTarget);
+  runCli(["init", "--target", brokenUpdateTarget, "--skip-check"]);
+  verifyBrokenCoreUpdateRecovery(brokenUpdateTarget);
+  runCli(["init", "--target", partialInstallTarget, "--skip-check"]);
+  verifyPartialInstallUpdateRecovery(partialInstallTarget);
   addLegacyInputs(target);
   runCli(["init", "--target", target]);
   verifyInstalledCore(target);
@@ -366,6 +372,31 @@ function verifyIfNewerNoOp(root) {
   if (!output.includes(`Agentic Workspace Core is current: ${packageJson.version}.`)) {
     throw new Error(`update --if-newer did not no-op on the current version:\n${output}`);
   }
+}
+
+function verifyBrokenCoreUpdateRecovery(root) {
+  writeText(path.join(root, ".agents/README.md"), "# Obsolete agent layer index\n");
+  fs.rmSync(path.join(root, ".agents/knowledge-core/scripts/build-index.mjs"), { force: true });
+
+  const output = runCliCapture(["update", "--target", root]);
+  if (!output.includes("Agentic Workspace Core updated")) {
+    throw new Error(`Broken core update did not complete:\n${output}`);
+  }
+  verifyInstalledCore(root);
+
+  if (!fs.existsSync(path.join(root, "legacy/.agents/README.md"))) {
+    throw new Error("Broken core update did not archive obsolete .agents/README.md");
+  }
+}
+
+function verifyPartialInstallUpdateRecovery(root) {
+  fs.rmSync(path.join(root, ".agents"), { recursive: true, force: true });
+
+  const output = runCliCapture(["update", "--target", root, "--if-newer"]);
+  if (!output.includes("Version: unknown/broken ->")) {
+    throw new Error(`Partial install recovery did not report unknown/broken version:\n${output}`);
+  }
+  verifyInstalledCore(root);
 }
 
 function verifyLegacyArchive(root) {

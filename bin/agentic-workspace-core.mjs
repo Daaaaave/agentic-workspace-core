@@ -270,8 +270,8 @@ async function update(flags) {
 
   ensureSafeTarget(flags.target);
   ensureExistingDirectory(flags.target);
-  const installedManifest = readInstalledManifest(flags.target);
-  if (flags.ifNewer) {
+  const installedManifest = readInstalledManifest(flags.target, { allowRecovery: true });
+  if (flags.ifNewer && !installedManifest.recovery) {
     const versionComparison = compareVersions(packageManifest.version, installedManifest.version);
     if (versionComparison === 0) {
       console.log(`Agentic Workspace Core is current: ${installedManifest.version}.`);
@@ -287,23 +287,12 @@ async function update(flags) {
     targetVersion: packageManifest.version,
     full: flags.full
   });
+  validatePlan(plan);
   printPlan(plan, flags, "update");
 
   if (flags.dryRun) return;
 
-  let archiveResult = null;
-  if (!plan.full && !flags.skipCheck && !flags.allowBroken && plan.archive.length > 0) {
-    archiveResult = archiveLegacyAgentContext(plan, flags.target);
-    if (archiveResult.moved.length > 0) {
-      runNodeScript(flags.target, ".agents/knowledge-core/scripts/build-index.mjs");
-    }
-  }
-
-  if (!plan.full && !flags.skipCheck && !flags.allowBroken) {
-    runNpmScript(flags.target, "knowledge:check", "Baseline knowledge check failed. Fix it first or rerun with --allow-broken.");
-  }
-
-  applyPlan(plan, flags, archiveResult);
+  applyPlan(plan, flags);
 
   console.log(`Agentic Workspace Core updated: ${installedManifest.version} -> ${packageManifest.version}.`);
 }
@@ -328,6 +317,18 @@ function buildPlan(targetRoot, mode, metadata = {}) {
     generatedRoot: getSourceGeneratedRoot(),
     generated: fs.existsSync(path.join(targetRoot, getSourceGeneratedRoot())) ? "reset and rebuild" : "create"
   };
+}
+
+function validatePlan(plan) {
+  if (plan.mode !== "update" || plan.full) return;
+
+  const conflictingArchives = plan.archive.filter((entry) =>
+    plan.replace.some((action) => isPathInside(action.target, entry.target))
+  );
+
+  if (conflictingArchives.length > 0) {
+    die(`Refusing unsafe update plan. Normal update must not archive active core paths: ${conflictingArchives.map((entry) => entry.target).join(", ")}. Use --full only when you intentionally want to archive and reinstall the whole core layer.`);
+  }
 }
 
 function buildReplaceEntries(mode, metadata = {}) {
@@ -512,10 +513,6 @@ function printPlan(plan, flags, mode) {
   console.log("Other updates:");
   console.log(`- package.json (${plan.packageJson})`);
   console.log(`- .gitignore (${plan.gitignore})`);
-  if (mode === "update" && !plan.full && !flags.skipCheck && !flags.allowBroken) {
-    const baselineTiming = plan.archive.length > 0 ? "after obsolete archive" : "before replacement";
-    console.log(`- baseline knowledge:check ${baselineTiming}`);
-  }
   if (!plan.replace.some((action) => isPathInside(plan.generatedRoot, action.target))) {
     console.log(`- ${plan.generatedRoot} (${plan.generated})`);
   }
@@ -768,19 +765,6 @@ function runNodeScript(targetRoot, script) {
   }
 }
 
-function runNpmScript(targetRoot, script, failureMessage) {
-  const result = spawnSync("npm", ["run", script], {
-    cwd: targetRoot,
-    stdio: "inherit"
-  });
-  if (result.error) {
-    die(`Failed to run npm: ${result.error.message}`);
-  }
-  if (result.status !== 0) {
-    die(failureMessage);
-  }
-}
-
 function ensureDirectory(dir) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -801,18 +785,64 @@ function ensureSafeTarget(targetRoot) {
   }
 }
 
-function readInstalledManifest(targetRoot) {
+function readInstalledManifest(targetRoot, options = {}) {
   const required = [
     "AGENTS.md",
     ".agents/knowledge.config.json",
     ".agents/knowledge-core/manifest.json"
   ];
+  const missing = [];
   for (const file of required) {
     if (!fs.existsSync(path.join(targetRoot, file))) {
-      die(`Agentic Workspace Core is not installed in ${targetRoot}. Missing ${file}. Run init first.`);
+      missing.push(file);
     }
   }
+  if (missing.length > 0) {
+    if (options.allowRecovery && hasCoreInstallMarker(targetRoot)) {
+      return {
+        version: "unknown/broken",
+        recovery: true,
+        missing
+      };
+    }
+    die(`Agentic Workspace Core is not installed in ${targetRoot}. Missing ${missing.join(", ")}. Run init first.`);
+  }
   return readJson(path.join(targetRoot, ".agents/knowledge-core/manifest.json"));
+}
+
+function hasCoreInstallMarker(targetRoot) {
+  const agentsFile = path.join(targetRoot, "AGENTS.md");
+  if (fileIncludes(agentsFile, "Agentic Workspace Core")) return true;
+
+  const packageFile = path.join(targetRoot, "package.json");
+  if (fs.existsSync(packageFile)) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(packageFile, "utf8"));
+      const scripts = isPlainObject(pkg.scripts) ? pkg.scripts : {};
+      if (
+        typeof scripts["knowledge:build"] === "string" ||
+        typeof scripts["knowledge:check"] === "string" ||
+        typeof scripts["awc:update:check"] === "string"
+      ) {
+        return true;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  const legacyManifest = path.join(targetRoot, "legacy/MANIFEST.md");
+  if (fileIncludes(legacyManifest, "agentic-workspace-core")) return true;
+
+  return false;
+}
+
+function fileIncludes(file, text) {
+  try {
+    return fs.existsSync(file) && fs.statSync(file).isFile() && fs.readFileSync(file, "utf8").includes(text);
+  } catch {
+    return false;
+  }
 }
 
 function readJson(file) {
@@ -924,8 +954,8 @@ Use --full to reinstall the whole core layer from the package payload. Full upda
 Options:
   --target, -C <dir>  Directory to update. Defaults to current directory.
   --dry-run          Print the update plan without writing files.
-  --skip-check       Rebuild generated indexes but skip baseline check and doctor validation.
-  --allow-broken     Allow update when the pre-update knowledge check fails.
+  --skip-check       Rebuild generated indexes but skip doctor validation.
+  --allow-broken     Accepted for compatibility; update repairs core before validation.
   --full             Archive the current core layer and reinstall the full package payload.
   --if-newer         No-op unless this package version is newer than the installed core.
 `);
