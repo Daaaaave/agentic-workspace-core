@@ -74,6 +74,13 @@ function verifyContextTargetGuard() {
 }
 
 function assertPayloadComplete() {
+  const manifest = readJson(path.join(payloadRoot, ".agents/knowledge-core/manifest.json"));
+  const starterSkills = manifest.starterSkills || [];
+  const requiredScripts = manifest.requiredScripts || [];
+  const requiredTemplates = [
+    ...(manifest.requiredTemplates || []),
+    ...(manifest.starterTemplates || [])
+  ];
   const required = [
     "AGENTS.md",
     "CLAUDE.md",
@@ -93,28 +100,23 @@ function assertPayloadComplete() {
     "docs/glossary/.gitkeep",
     ".agents/knowledge.config.json",
     ".agents/knowledge-core/manifest.json",
-    ".agents/knowledge-core/scripts/build-index.mjs",
-    ".agents/knowledge-core/scripts/doctor.mjs",
-    ".agents/skills/frontend-ui-workflow/SKILL.md",
-    ".agents/skills/project-knowledge/SKILL.md",
-    ".agents/skills/research-to-knowledge/SKILL.md",
-    ".agents/skills/software-development-workflow/SKILL.md",
+    ...requiredScripts.map((script) => `.agents/knowledge-core/scripts/${script}`),
+    ...requiredTemplates.map((template) => `.agents/knowledge-core/templates/${template}`),
+    ...starterSkills.flatMap((skill) => [
+      `.agents/skills/${skill}/SKILL.md`,
+      `.agents/evals/skills/${skill}.eval.md`
+    ]),
     ".agents/skills/software-development-workflow/references/task-contract.md",
     ".agents/skills/software-development-workflow/references/context-plan.md",
     ".agents/skills/software-development-workflow/references/implementation-loop.md",
     ".agents/skills/software-development-workflow/references/debugging-loop.md",
     ".agents/skills/software-development-workflow/references/security-gate.md",
-    ".agents/skills/software-development-workflow/references/done-gate.md",
-    ".agents/skills/write-agent-handoff/SKILL.md",
-    ".agents/skills/write-agent-skill/SKILL.md",
-    ".agents/evals/skills/frontend-ui-workflow.eval.md",
-    ".agents/evals/skills/software-development-workflow.eval.md"
+    ".agents/skills/software-development-workflow/references/done-gate.md"
   ];
 
   const missing = required.filter((file) => !fs.existsSync(path.join(payloadRoot, file)));
   if (missing.length > 0) throw new Error(`Payload is incomplete:\n${missing.join("\n")}`);
 
-  const manifest = readJson(path.join(payloadRoot, ".agents/knowledge-core/manifest.json"));
   if (manifest.version !== packageJson.version) {
     throw new Error(`Payload manifest version ${manifest.version} does not match package version ${packageJson.version}`);
   }
