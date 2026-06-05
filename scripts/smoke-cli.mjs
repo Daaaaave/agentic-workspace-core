@@ -26,6 +26,7 @@ try {
   addLocalOverrides(target);
   runCli(["update", "--target", target]);
   verifyInstalledCore(target);
+  verifyIfNewerNoOp(target);
   verifyLocalOverrides(target);
   addLocalKnowledgeAndStaleIndexes(target);
   runCli(["update", "--target", target, "--skip-check"]);
@@ -65,6 +66,18 @@ function runCliExpectFailure(args, expectedText) {
   if (!output.includes(expectedText)) {
     throw new Error(`CLI failure did not include expected text "${expectedText}":\n${output}`);
   }
+}
+
+function runCliCapture(args) {
+  const result = spawnSync(process.execPath, [cli, ...args], {
+    cwd: repoRoot,
+    encoding: "utf8"
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`CLI command failed: ${args.join(" ")}\n${result.stdout || ""}${result.stderr || ""}`);
+  }
+  return `${result.stdout || ""}${result.stderr || ""}`;
 }
 
 function verifyContextTargetGuard() {
@@ -315,6 +328,27 @@ function verifyInstalledCore(root) {
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf8");
   if (!gitignore.includes(".context/") || !gitignore.includes("CLAUDE.local.md") || !gitignore.includes("legacy/")) {
     throw new Error("Installed .gitignore is missing required local runtime ignores");
+  }
+
+  const pkg = readJson(path.join(root, "package.json"));
+  const scripts = pkg.scripts || {};
+  const expectedScripts = {
+    "knowledge:build": "node .agents/knowledge-core/scripts/build-index.mjs",
+    "knowledge:doctor": "node .agents/knowledge-core/scripts/doctor.mjs",
+    "knowledge:check": "node .agents/knowledge-core/scripts/build-index.mjs --check && npm run knowledge:doctor",
+    "awc:update:check": "npx --yes agentic-workspace-core@latest update --if-newer"
+  };
+  for (const [name, value] of Object.entries(expectedScripts)) {
+    if (scripts[name] !== value) {
+      throw new Error(`Installed package.json script ${name} is wrong: ${scripts[name] || "<missing>"}`);
+    }
+  }
+}
+
+function verifyIfNewerNoOp(root) {
+  const output = runCliCapture(["update", "--target", root, "--if-newer"]);
+  if (!output.includes(`Agentic Workspace Core is current: ${packageJson.version}.`)) {
+    throw new Error(`update --if-newer did not no-op on the current version:\n${output}`);
   }
 }
 
