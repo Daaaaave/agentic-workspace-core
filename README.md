@@ -159,4 +159,4 @@ npm run release:check
 
 ## Status
 
-`0.1.x` is a hardening line with replace-first `init` and `update` contracts. Safer adoption and provenance-aware merge workflows are planned for `0.2.0`.
+`0.2.x` is the current public hardening line with replace-first `init`, managed `update`, and starter skills for project knowledge, software development, research, handoffs, skill authoring, and frontend UI work.

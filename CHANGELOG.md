@@ -4,6 +4,10 @@
 
 No unreleased changes.
 
+## 0.2.1 - 2026-06-05
+
+- Relaxed `frontend-ui-workflow` screenshot guidance so screenshots are used only when they materially improve visual evidence, not as a fixed ritual for every frontend task.
+
 ## 0.2.0 - 2026-06-05
 
 - Added `frontend-ui-workflow` as a starter skill for frontend/UI build, redesign, polish, review, design-system consistency, accessibility, responsive behavior, and visual verification.
