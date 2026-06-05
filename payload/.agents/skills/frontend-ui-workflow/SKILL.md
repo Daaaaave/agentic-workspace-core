@@ -166,7 +166,7 @@ For Figma, screenshots, URLs, or brand references:
 - Extract layout, spacing, typography, color, assets, component structure, and interaction intent.
 - Map reference primitives to existing project tokens/components before creating new ones.
 - Preserve important visual relationships; do not copy inaccessible, unresponsive, or unmaintainable details blindly.
-- If using Figma MCP or similar tools, fetch structured context and a screenshot when available; validate the final UI against the visual reference.
+- If using Figma MCP or similar tools, fetch structured context and visual evidence when available; validate the final UI against the visual reference.
 - If reference data is incomplete, proceed with labeled assumptions only for low-risk work; ask or report a blocker for high-impact product, release, or design-system changes.
 
 ### 7. Verify In The Running UI
@@ -177,11 +177,13 @@ Run relevant evidence:
 
 - Typecheck/lint/unit/component tests for code correctness.
 - Browser/app runtime check for actual rendering.
-- Screenshots at mobile and desktop widths; add tablet/wide when layout risk warrants it.
+- Viewport checks for affected breakpoints. Capture screenshots only when they materially improve evidence, such as visual redesign/polish, responsive or layout risk, Figma/screenshot/reference comparison, review handoff, or an explicit user request. Use affected viewports instead of a fixed mobile/desktop ritual.
 - Interaction checks for primary flows, focus, keyboard path, disabled/loading/error states, and reduced-motion behavior when relevant.
 - Visual comparison against Figma/screenshot/reference when provided.
 - Accessibility checks available in the project plus manual semantic/focus/contrast review for touched controls.
 - Package/build check when shared UI, bundling, SSR/RSC boundaries, or production assets are affected.
+
+For small low-risk UI edits, runtime inspection plus targeted tests may be enough; do not create screenshots just to satisfy this skill.
 
 For visual regression tests, use the project's existing baseline flow. Do not add or update golden screenshots casually; make visual baseline changes reviewable.
 
@@ -208,7 +210,7 @@ For implementation work, finish with:
 
 - what UI changed
 - which design-system or component owner was used or updated
-- what runtime/browser/screenshot/accessibility verification ran
+- what runtime/browser/visual/accessibility verification ran
 - what remains unverified and why
 
 For review work, lead with findings ordered by user impact. Include file/line references for code and viewport/state evidence for rendered UI.
