@@ -398,9 +398,9 @@ function resolveExistingArchiveTarget(targetRoot, candidate) {
   if (!archiveCandidateMatches(absolute, candidate)) return null;
 
   const identity = archivePathIdentity(absolute);
-  const realTarget = realRelativePath(targetRoot, absolute);
+  const archiveTarget = archiveRelativePath(targetRoot, absolute);
   return {
-    target: realTarget || candidate.target,
+    target: archiveTarget || candidate.target,
     identity
   };
 }
@@ -432,21 +432,16 @@ function archiveCandidateMatches(absolute, candidate) {
 
 function archivePathIdentity(absolute) {
   try {
-    return fs.realpathSync.native(absolute);
+    const stat = fs.lstatSync(absolute);
+    return `${stat.dev}:${stat.ino}:${path.resolve(absolute)}`;
   } catch {
     return path.resolve(absolute);
   }
 }
 
-function realRelativePath(root, absolute) {
-  try {
-    const realRoot = fs.realpathSync.native(root);
-    const realFile = fs.realpathSync.native(absolute);
-    const relative = path.relative(realRoot, realFile);
-    return normalizeRelativePath(relative);
-  } catch {
-    return null;
-  }
+function archiveRelativePath(root, absolute) {
+  const relative = path.relative(path.resolve(root), path.resolve(absolute));
+  return normalizeRelativePath(relative);
 }
 
 function discoverLegacyAgentPatternEntries(targetRoot) {

@@ -376,6 +376,7 @@ function verifyIfNewerNoOp(root) {
 
 function verifyBrokenCoreUpdateRecovery(root) {
   writeText(path.join(root, ".agents/README.md"), "# Obsolete agent layer index\n");
+  fs.symlinkSync(".agents", path.join(root, ".claude"), "dir");
   fs.rmSync(path.join(root, ".agents/knowledge-core/scripts/build-index.mjs"), { force: true });
 
   const output = runCliCapture(["update", "--target", root]);
@@ -386,6 +387,9 @@ function verifyBrokenCoreUpdateRecovery(root) {
 
   if (!fs.existsSync(path.join(root, "legacy/.agents/README.md"))) {
     throw new Error("Broken core update did not archive obsolete .agents/README.md");
+  }
+  if (!pathIsSymlink(path.join(root, "legacy/.claude"))) {
+    throw new Error("Broken core update did not archive legacy .claude symlink without archiving active .agents");
   }
 }
 
@@ -568,6 +572,14 @@ function verifyFullUpdate(root) {
 
   const failed = checks.filter(([passed]) => !passed).map(([, message]) => message);
   if (failed.length > 0) throw new Error(failed.join("\n"));
+}
+
+function pathIsSymlink(file) {
+  try {
+    return fs.lstatSync(file).isSymbolicLink();
+  } catch {
+    return false;
+  }
 }
 
 function readJson(file) {
