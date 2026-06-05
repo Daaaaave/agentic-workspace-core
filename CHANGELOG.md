@@ -4,6 +4,12 @@
 
 No unreleased changes.
 
+## 0.2.3 - 2026-06-05
+
+- Added doctor enforcement that authored docs must live inside configured `documents.defaultDirectories` instead of directly under `docsRoot`.
+- Clarified agent routing text so new durable docs are created in the configured default directory selected by memory policy routing and `.agents/knowledge.config.json`.
+- Added smoke coverage for rejecting root-level authored docs under `docs/`.
+
 ## 0.2.2 - 2026-06-05
 
 - Added `update --if-newer` and installed `awc:update:check` script so clients can no-op when current or apply the latest managed core when a newer package is available.

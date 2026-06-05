@@ -121,6 +121,8 @@ Choose the most durable applicable destination. Route by canonical owner and evi
 
 When uncertain between creating a new doc and updating an existing one, update the existing canonical owner unless the topic boundary would become unclear.
 
+When `documents.defaultDirectories` is configured, authored docs must live inside one of those directories. `paths.docsRoot` is the container, not a writable catch-all.
+
 Default `docs/` directory routing:
 
 | Directory | Use For | Avoid |
