@@ -32,6 +32,7 @@ This repository uses Agentic Workspace Core.
 - For current external claims or best-practice comparisons, gather source-backed evidence before relying on memory.
 - If no relevant durable knowledge exists, state that and proceed from code, tests, current sources, and user-provided facts.
 - When a reusable project fact changes, route it through the memory policy before making it durable.
+- During active work, when sending intermediate progress updates, use English and keep each to one terse, useful line by default; expand only for blockers, plans, or requested detail.
 
 ## Completion
 
