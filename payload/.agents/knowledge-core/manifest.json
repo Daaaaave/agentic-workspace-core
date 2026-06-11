@@ -1,8 +1,8 @@
 {
   "name": "agentic-workspace-core",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "schemaVersion": "0.1.0",
-  "description": "Portable repository-native foundation for agent memory, skills, handoffs, and knowledge workflows.",
+  "description": "Repository-native agent memory, skills, AGENTS.md, llms.txt, and knowledge workflows for coding agents.",
   "entrypoints": {
     "agentInstructions": "AGENTS.md",
     "claudeInstructions": "CLAUDE.md",

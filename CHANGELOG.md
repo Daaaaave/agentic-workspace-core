@@ -4,6 +4,11 @@
 
 No unreleased changes.
 
+## 0.2.7 - 2026-06-11
+
+- Reworked the README around the public value proposition, current install/update behavior, managed paths, starter skills, and package maintainer flow.
+- Updated package and payload metadata with clearer agent memory, `AGENTS.md`, `llms.txt`, and coding-agent discovery terms.
+
 ## 0.2.6 - 2026-06-11
 
 - Added an `AGENTS.md` work-rhythm rule that keeps intermediate progress updates in English and limited to one terse useful line by default.
