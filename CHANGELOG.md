@@ -4,6 +4,10 @@
 
 No unreleased changes.
 
+## 0.2.6 - 2026-06-11
+
+- Added an `AGENTS.md` work-rhythm rule that keeps intermediate progress updates in English and limited to one terse useful line by default.
+
 ## 0.2.5 - 2026-06-05
 
 - Fixed normal update planning for legacy symlinks such as `.claude -> .agents` so the updater archives the symlink itself instead of resolving it to the active `.agents` core layer.
