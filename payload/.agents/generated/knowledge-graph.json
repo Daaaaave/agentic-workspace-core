@@ -2,7 +2,7 @@
   "schemaVersion": "0.1.0",
   "core": {
     "name": "agentic-workspace-core",
-    "version": "0.2.6"
+    "version": "0.2.7"
   },
   "generated": true,
   "source": "docs",

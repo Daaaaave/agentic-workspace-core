@@ -3,24 +3,22 @@
 [![npm version](https://img.shields.io/npm/v/agentic-workspace-core.svg)](https://www.npmjs.com/package/agentic-workspace-core)
 [![CI](https://github.com/Daaaaave/agentic-workspace-core/actions/workflows/ci.yml/badge.svg)](https://github.com/Daaaaave/agentic-workspace-core/actions/workflows/ci.yml)
 
-Agentic Workspace Core is a portable workspace layer for coding agents.
+Repository-native memory and workflow infrastructure for coding agents.
 
-It gives a repository one shared agent entrypoint, a small durable knowledge system, starter skills, generated indexes, handoff conventions, and validation scripts. The goal is simple: agents should work from inspectable files in the repo instead of hidden chat memory, stale prompts, or tool-specific rule sprawl.
+Agentic Workspace Core installs a shared `AGENTS.md`, durable project knowledge in `docs/`, reusable agent skills, generated `llms.txt` navigation, handoff conventions, and validation scripts. It keeps agent context inspectable, versioned, and reviewable instead of scattering project memory across hidden chats, stale prompts, and tool-specific rule files.
 
-It is not an agent runtime, framework, vector database, or required Obsidian vault. It is a repository-native base you install into projects and keep in version control.
+It is not an agent runtime, framework, vector database, or Obsidian vault. It is a portable core layer you install into a repository so Codex, Claude Code, and other coding agents can work from the same project-native source of truth.
 
-## Why This Exists
+## Why Use It
 
-Agent work gets messy when every tool has its own instructions, project knowledge lives in chat history, generated context becomes trusted as truth, and future agents rediscover the same decisions or mistakes.
+Use Agentic Workspace Core when you want agents to:
 
-This package installs a clean structure for:
-
-- `AGENTS.md` as the authoritative instruction entrypoint.
-- `docs/` as durable project knowledge.
-- `.agents/skills/` as reusable agent procedures.
-- `llms.txt` and `.agents/generated/*` as generated navigation, not policy.
-- `.context/handoffs/` as ignored temporary transfer state.
-- local scripts that rebuild and validate the knowledge layer.
+- start from one clear repository instruction entrypoint: `AGENTS.md`
+- remember project facts through reviewed Markdown docs, not chat history
+- use focused skills for software development, frontend UI, research, handoffs, skill authoring, and project knowledge
+- rebuild generated navigation instead of trusting stale generated context
+- archive old agent rules and memory files into `legacy/` before replacing them
+- keep every install, update, and memory change visible in git
 
 ## Quick Start
 
@@ -32,9 +30,11 @@ npx agentic-workspace-core@latest init
 npm run knowledge:check
 ```
 
-`init` does not require a package-level confirmation flag. If npm asks to download the package for `npx`, confirm npm's prompt once.
+`init --dry-run` prints the exact files that would be created, replaced, or archived. Use it first on existing repositories.
 
-Do not clone this GitHub repository into the target project. Install through the npm CLI above so the package can place its managed files at the project root. Do not install into `.context`; that directory is ignored runtime scratch space. If the working directory is uncertain, resolve the repository root first and pass it explicitly:
+Do not clone this GitHub repository into the target project. Install through the npm CLI so the package places its managed files at the project root.
+
+If the working directory is uncertain, resolve the repository root explicitly:
 
 ```bash
 repo_root="$(git rev-parse --show-toplevel)"
@@ -42,11 +42,9 @@ npx agentic-workspace-core@latest init --target "$repo_root" --dry-run
 npx agentic-workspace-core@latest init --target "$repo_root"
 ```
 
-## Important: `0.1.x` Install Mode
+## Install Behavior
 
-`0.1.x` is intentionally replace-first. It is best for controlled projects where you want a clean Agentic Workspace Core layer.
-
-Managed paths that may be replaced:
+`init` is a clean core install. It may replace these managed paths:
 
 - `AGENTS.md`
 - `CLAUDE.md`
@@ -54,9 +52,9 @@ Managed paths that may be replaced:
 - `docs/`
 - `llms.txt`
 
-Before replacement, `init` moves existing agent-facing context into root `legacy/` with original relative paths preserved. That includes old instruction files, existing `.agents/`, existing `docs/`, old `llms*.txt` indexes, common AI-tool rule/config directories, and MCP config files. `update` also moves known obsolete agent-facing paths from earlier package layouts into `legacy/`. `legacy/` is ignored by git and is not treated as active project knowledge.
+Before replacement, existing agent-facing files are moved into root `legacy/` with their relative paths preserved. This includes old instruction files, `.agents/`, `docs/`, `llms*.txt`, common AI-tool rules/config directories, and MCP config files. `legacy/` is ignored by git and is not treated as active project knowledge.
 
-Use the dry run first on existing repositories.
+This replace-first install model is deliberate: the package creates a clean active agent layer, while keeping old material available for manual review and recovery.
 
 ## Update
 
@@ -66,25 +64,32 @@ npx agentic-workspace-core@latest update
 npm run knowledge:check
 ```
 
-`update` requires an existing install. It:
+Normal `update` requires an existing install. It:
 
-- runs a baseline `knowledge:check` unless skipped
-- replaces core-managed files and upstream starter skills
+- replaces `AGENTS.md`, `CLAUDE.md`, `.agents/knowledge-core/`, and upstream starter skill/eval files
+- preserves project docs under `docs/`
 - preserves project-specific skill directories and evals
-- preserves safe local config extensions
-- moves obsolete agent-facing paths from older package layouts into `legacy/`
-- always rebuilds generated indexes
+- preserves safe local `.agents/knowledge.config.json` extensions
+- archives obsolete agent-facing paths from older package layouts into `legacy/`
+- rebuilds `llms.txt` and `.agents/generated/*`
+- runs doctor validation unless `--skip-check` is used
 
-`--skip-check` still rebuilds `llms.txt` and `.agents/generated/*`; it only skips validation checks.
+Installed projects also get:
 
-For controlled projects where you want the package payload reapplied from scratch, use full update:
+```bash
+npm run awc:update:check
+```
+
+That command runs `agentic-workspace-core@latest update --if-newer`; it no-ops when the installed core is current and applies the normal update path when a newer package is available.
+
+For controlled projects where you want the package payload reapplied from scratch:
 
 ```bash
 npx agentic-workspace-core@latest update --full --dry-run
 npx agentic-workspace-core@latest update --full
 ```
 
-`update --full` archives the current core layer into `legacy/` and then reinstalls `AGENTS.md`, `CLAUDE.md`, `.agents/`, `docs/`, and `llms.txt` from the package payload. This is the explicit reinstall path for early `0.1.x` projects when you want stale local agent memory, old docs skeletons, or customized core files out of the active context.
+`update --full` archives the current core layer into `legacy/` and reinstalls `AGENTS.md`, `CLAUDE.md`, `.agents/`, `docs/`, and `llms.txt` from the package payload.
 
 ## What Gets Installed
 
@@ -109,16 +114,17 @@ docs/
   research/
   runbooks/
   workflows/
-.context/handoffs/   # ignored
 legacy/              # ignored, created only when old agent context is archived
 ```
 
+`.context/handoffs/` is also reserved and ignored for temporary handoff state. It is created only when a handoff workflow needs it.
+
 ## Starter Skills
 
+- `software-development-workflow`: non-trivial coding work from task contract through verified completion.
 - `frontend-ui-workflow`: frontend/UI build, redesign, polish, review, product-appropriate design taste, design-system consistency, accessibility, responsive behavior, and visual verification.
 - `project-knowledge`: recall, route, write, correct, and validate durable repository knowledge.
 - `research-to-knowledge`: source-backed research and research persistence.
-- `software-development-workflow`: non-trivial coding work from task contract through verified completion.
 - `write-agent-skill`: skill creation, revision, security review, and evals.
 - `write-agent-handoff`: temporary transfer state for another agent, workspace, or future session.
 
@@ -136,7 +142,7 @@ npm run awc:update:check
 - `knowledge:build` regenerates `llms.txt` and `.agents/generated/*`.
 - `knowledge:doctor` validates docs, skills, evals, config, and core paths.
 - `knowledge:check` verifies generated files are current and runs the doctor.
-- `awc:update:check` runs `agentic-workspace-core@latest update --if-newer`; it no-ops when current and updates the managed core when a newer package is available.
+- `awc:update:check` checks for a newer Agentic Workspace Core package and updates when needed.
 
 ## Design Rules
 
@@ -146,6 +152,16 @@ npm run awc:update:check
 - Handoffs are temporary and ignored by git.
 - Memory writes require owner, evidence, scope, lifecycle status, freshness, retrieval aliases, and safety checks.
 - Optional adapters such as Obsidian, vector search, MCP, graph databases, or SQL databases must not become hidden sources of truth unless a project explicitly chooses that contract.
+
+## Requirements
+
+- Node.js 20 or newer.
+- npm/npx.
+- Git is strongly recommended so install and update diffs are reviewable.
+
+## Support
+
+Open bugs, install/update problems, and package design proposals in [GitHub Issues](https://github.com/Daaaaave/agentic-workspace-core/issues).
 
 ## Package Maintainers
 
@@ -159,6 +175,10 @@ npm run release:check
 
 `release:check` runs knowledge validation, CLI smoke tests, and a dry-run package inspection before publishing. Releases are published to npm through GitHub Releases and the `Publish` workflow.
 
+## License
+
+MIT.
+
 ## Status
 
-`0.2.x` is the current public hardening line with replace-first `init`, managed `update`, and starter skills for project knowledge, software development, research, handoffs, skill authoring, and frontend UI work.
+`0.2.x` is the current public hardening line. The core is usable today, with a deliberately explicit install/update model and active hardening around agent memory, skills, generated indexes, and update safety.
