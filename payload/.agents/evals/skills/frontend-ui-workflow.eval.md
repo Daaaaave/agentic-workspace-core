@@ -18,6 +18,7 @@ Purpose: verify that `frontend-ui-workflow` triggers for frontend, UI, UX, visua
 | "The mobile nav clips long labels." | Loads the skill, treats it as frontend runtime/layout work, reproduces or inspects the responsive state, fixes the owner, and verifies long-label mobile behavior. |
 | "We added a new card component; make sure it fits our design system." | Loads the skill, checks existing card primitives/tokens/spacing/elevation/interaction patterns, updates the component or local usage appropriately, and verifies state/responsive behavior. |
 | "The page works, but it still feels default and unfinished. Do a design pass." | Loads the skill, chooses a product-fit point of view, improves composition/typography/spacing/color/media/motion where relevant, performs a craft pass, and verifies the rendered result. |
+| "Review the settings UI in the tab where I am already signed in, and capture the broken layout." | Loads the skill, reuses the authenticated target-app session through provided browser tools, prefers DOM/accessibility tools for interaction and inspection, captures the requested screenshot in that session, and does not launch another browser just to capture it. |
 
 ## Should Not Trigger
 
@@ -31,6 +32,7 @@ Purpose: verify that `frontend-ui-workflow` triggers for frontend, UI, UX, visua
 | "Change the button text from Save to Submit." | Does not need this skill when it is a tiny copy-only edit with no layout or state risk. |
 | "Summarize the CSS architecture." | Reads relevant files/docs directly or uses `project-knowledge`; does not load this skill unless review/change work is requested. |
 | "Install Tailwind." | Uses `software-development-workflow` and possibly `research-to-knowledge`; this skill triggers only if the task includes UI/design-system implementation or review. |
+| "Diagnose why the browser automation server cannot connect; no UI review or changes are needed." | Uses `software-development-workflow` for tool/connection debugging; does not load this skill solely because a browser is involved. |
 
 ## Edge Cases
 
@@ -52,3 +54,9 @@ Purpose: verify that `frontend-ui-workflow` triggers for frontend, UI, UX, visua
 | "The component passes tests but looks broken." | Loads the skill, treats runtime visual evidence as required, inspects rendered layout/states, and does not claim done based only on tests. |
 | "Move this repeated hardcoded color into tokens across the UI." | Loads the skill, identifies token ownership and affected usages, applies the migration in a scoped slice, and verifies no visual regressions in representative surfaces. |
 | "Polish this sidebar; maybe add Framer Motion and a new icon pack if needed." | Loads the skill, uses the existing UI/icon/motion stack by default, adds dependencies only for a project-level need through the normal engineering workflow, and verifies rendered interaction states. |
+| "Verify the logged-in UI; the browser connector timed out, but my tab is still open." | Loads the skill, diagnoses the reported error, connection configuration, access, and target session before considering a separate browser; does not treat one timeout as proof that reuse is unavailable. |
+| "Pause the UI check; I am taking over this tab. I will tell you when to continue." | Pauses browser automation and yields control without closing or restarting the user's browser; after the user returns control, refreshes page state before resuming instead of using stale targets. |
+| "Verify the UI with our isolated CI browser tests; I also have a logged-in tab open." | Loads the skill and follows the configured isolated test flow; does not replace test isolation with the user's authenticated session. |
+| "Inspect this UI using the provided browser tool; it supports only screenshots and pointer input." | Loads the skill, uses the permitted tool's capabilities, does not require DOM/CDP or bypass tool restrictions, and captures screenshots only when useful for the requested verification. |
+| "Review the public landing page using the connected browser's accessibility snapshots; no login is needed." | Loads the skill, uses the existing session and provided accessibility tools without requiring sign-in or a raw CDP connection, and captures screenshots only when visual evidence is needed. |
+| "Check the authenticated UI; diagnosis confirms the existing session cannot be reached." | Loads the skill, uses a separate session if available and suitable for the task, and reports authenticated behavior as unverified if the fallback cannot reproduce the required login state. |

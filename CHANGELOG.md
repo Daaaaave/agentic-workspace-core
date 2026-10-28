@@ -4,6 +4,11 @@
 
 No unreleased changes.
 
+## 0.2.8 - 2026-10-28
+
+- Updated `frontend-ui-workflow` to prefer existing browser sessions and login state, structured DOM/accessibility tools, and screenshots from the same session; diagnose connection failures before switching sessions while preserving test isolation and human control.
+- Added eight eval cases covering browser session reuse, connection recovery, human takeover, isolated tests, limited browser tools, public pages, and routing boundaries.
+
 ## 0.2.7 - 2026-06-11
 
 - Reworked the README around the public value proposition, current install/update behavior, managed paths, starter skills, and package maintainer flow.

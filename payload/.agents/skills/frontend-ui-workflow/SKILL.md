@@ -173,6 +173,10 @@ For Figma, screenshots, URLs, or brand references:
 
 Do not claim frontend work is done from code inspection alone when runtime verification is possible.
 
+- For interactive checks, prefer the target app's existing session and login state through the provided browser tools. Prefer DOM/accessibility tools for interaction and inspection; capture needed screenshots in that session.
+- Diagnose connection failures before switching sessions; preserve required test isolation.
+- Pause automation on human takeover; resume only after control returns, using fresh page state.
+
 Run relevant evidence:
 
 - Typecheck/lint/unit/component tests for code correctness.
